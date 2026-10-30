@@ -32,6 +32,8 @@ func Status(kind domain.Kind) int {
 		return http.StatusServiceUnavailable
 	case domain.KindBadGateway:
 		return http.StatusBadGateway
+	case domain.KindConflict:
+		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
 	}
@@ -54,6 +56,8 @@ func Code(err *domain.Error) string {
 		return "SERVICE_UNAVAILABLE"
 	case domain.KindBadGateway:
 		return "BAD_GATEWAY"
+	case domain.KindConflict:
+		return "CONFLICT"
 	default:
 		return "INTERNAL_ERROR"
 	}
@@ -65,7 +69,7 @@ func PublicMessage(err *domain.Error) string {
 		return "resource not found"
 	case domain.KindUnauthorized:
 		return "authentication required"
-	case domain.KindBadRequest, domain.KindServiceUnavailable, domain.KindBadGateway:
+	case domain.KindBadRequest, domain.KindServiceUnavailable, domain.KindBadGateway, domain.KindConflict:
 		return err.Message()
 	default:
 		return "internal server error"

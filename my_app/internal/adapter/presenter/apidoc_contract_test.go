@@ -18,6 +18,7 @@ func TestApidocContract(t *testing.T) {
 		{"Health/healthBody", reflect.TypeOf(apidoc.Health{}), reflect.TypeOf(healthBody{})},
 		{"JSONWebKeySet/jsonWebKeySetBody", reflect.TypeOf(apidoc.JSONWebKeySet{}), reflect.TypeOf(jsonWebKeySetBody{})},
 		{"SigningKeyList/signingKeyListBody", reflect.TypeOf(apidoc.SigningKeyList{}), reflect.TypeOf(signingKeyListBody{})},
+		{"SigningKeyRotation/signingKeyRotationBody", reflect.TypeOf(apidoc.SigningKeyRotation{}), reflect.TypeOf(signingKeyRotationBody{})},
 		{"PeerSigningKeyList/peerSigningKeyListBody", reflect.TypeOf(apidoc.PeerSigningKeyList{}), reflect.TypeOf(peerSigningKeyListBody{})},
 		{"Subscription/subscriptionBody", reflect.TypeOf(apidoc.Subscription{}), reflect.TypeOf(subscriptionBody{})},
 		{"SubscriptionList/subscriptionListBody", reflect.TypeOf(apidoc.SubscriptionList{}), reflect.TypeOf(subscriptionListBody{})},

@@ -88,7 +88,7 @@ func NewWithDB(cfg *config.Config, db *sql.DB, logger port.Logger, overrides Ove
 	}
 
 	queries := store.New(db)
-	signingKeyRepository := postgres.NewSigningKeyRepository(queries, privateKeySealer)
+	signingKeyRepository := postgres.NewSigningKeyRepository(db, queries, privateKeySealer)
 	entitlementRepository := postgres.NewEntitlementRepository(db, queries)
 	activationNotificationRepository := postgres.NewActivationNotificationRepository(queries)
 	jobLock := postgres.NewJobLockRepository(db)
@@ -111,6 +111,8 @@ func NewWithDB(cfg *config.Config, db *sql.DB, logger port.Logger, overrides Ove
 	trackSigningKeyStatusesUC := signingkey.NewTrackSigningKeyStatusesInteractor(signingKeyRepository, systemClock, logger)
 	listPublishedSigningKeysUC := signingkey.NewListPublishedSigningKeysInteractor(signingKeyRepository, systemClock)
 	listSigningKeysUC := signingkey.NewListSigningKeysInteractor(signingKeyRepository, systemClock)
+	rotateSigningKeyUC := signingkey.NewRotateSigningKeyInteractor(jobLock, signingKeyRepository, signingKeyRepository, keyPairGenerator,
+		systemClock, uuidGenerator, logger, JobEnsureSigningKeys, cfg.KeySchedule, cfg.KeyAlgorithm)
 	listPeerSigningKeysUC := peersigningkey.NewListPeerSigningKeysInteractor(peerKeySet)
 	refreshPeerSigningKeysUC := peersigningkey.NewRefreshPeerSigningKeysInteractor(peerKeySet)
 	authenticatePeerRequestUC := authentication.NewAuthenticatePeerRequestInteractor(tokenVerifier, systemClock, cfg.PeerIssuer, cfg.TokenLeeway)
@@ -128,7 +130,7 @@ func NewWithDB(cfg *config.Config, db *sql.DB, logger port.Logger, overrides Ove
 	}
 	router := controller.NewRouter(
 		controller.NewHealthController(databaseProbe, presenter.NewHealthPresenter()),
-		controller.NewSigningKeyController(listPublishedSigningKeysUC, listSigningKeysUC, presenter.NewSigningKeyPresenter(), cfg.PeerJWKSPollInterval),
+		controller.NewSigningKeyController(listPublishedSigningKeysUC, listSigningKeysUC, rotateSigningKeyUC, presenter.NewSigningKeyPresenter(), cfg.PeerJWKSPollInterval),
 		controller.NewPeerSigningKeyController(listPeerSigningKeysUC, presenter.NewPeerSigningKeyPresenter()),
 		controller.NewEntitlementController(upsertEntitlementUC, getEntitlementUC, listEntitlementsUC, terminateEntitlementUC, presenter.NewEntitlementPresenter()),
 		controller.NewPeerAuthMiddleware(authenticatePeerRequestUC, logger),

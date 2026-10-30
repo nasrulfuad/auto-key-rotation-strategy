@@ -105,6 +105,8 @@ sequenceDiagram
 
 The next key is created `KEY_PENDING_DURATION` before the current key stops signing and becomes active exactly when the current key ends, so there is never a gap and never two signing keys. The status is derived from four timestamps (`introduced_at`, `active_from`, `active_until`, `delete_after`); there is no status column. `TOKEN_TTL` must not exceed `KEY_INACTIVE_DURATION`, which guarantees a token signed at the last second of the active phase verifies until it expires.
 
+`POST /signing-keys/rotate` forces a rotation on demand without skipping the pending phase: the next key is published at once and signs after `KEY_PENDING_DURATION`, and the current key's `active_until` moves to that instant (its inactive phase follows as usual). It is rejected with `409 SIGNING_KEY_ALREADY_PENDING` while a pending key exists, so the scheduler and manual rotations never stack. The endpoint is unauthenticated because this is a sandbox; a real deployment must protect it.
+
 ```mermaid
 gantt
     dateFormat HH:mm
@@ -153,6 +155,7 @@ curl -s localhost:8081/subscriptions
 curl -s localhost:8081/activation-notifications
 curl -s localhost:8082/.well-known/jwks.json
 curl -s localhost:8082/signing-keys
+curl -s -X POST localhost:8082/signing-keys/rotate
 curl -s localhost:8082/peer-signing-keys
 ```
 
@@ -168,6 +171,7 @@ To see why the pending phase and polling matter, restart with `PEER_JWKS_POLL_IN
 | GET | `/docs`, `/openapi.json` | public, only with `ENABLE_API_DOCS=true` |
 | GET | `/.well-known/jwks.json` | public |
 | GET | `/signing-keys` | public, debug view of every key and its status |
+| POST | `/signing-keys/rotate` | public, debug only; creates the next key as pending and ends the current key when it activates, `409 SIGNING_KEY_ALREADY_PENDING` while a pending key exists |
 | GET | `/peer-signing-keys` | public, debug view of the cached `my_app` JWKS |
 | PUT | `/subjects/:subject_id/entitlements/:entitlement_id` | bearer JWT from `my_app`, `aud` = `ENTITLEMENT_SET_AUDIENCE`; status `ACTIVE` (also reactivates) |
 | POST | `/subjects/:subject_id/entitlements/:entitlement_id/terminate` | bearer JWT from `my_app`, `aud` = `ENTITLEMENT_SET_AUDIENCE`; status `TERMINATED` |
@@ -179,6 +183,7 @@ To see why the pending phase and polling matter, restart with `PEER_JWKS_POLL_IN
 | Method | Path | Auth |
 |---|---|---|
 | GET | `/health`, `/health/db`, `/.well-known/jwks.json`, `/signing-keys`, `/peer-signing-keys` | public |
+| POST | `/signing-keys/rotate` | public, debug only; same rotation as `partner_app` |
 | GET | `/docs`, `/openapi.json` | public, only with `ENABLE_API_DOCS=true` |
 | POST | `/activations` | public; signs with the active key, calls `partner_app` PUT entitlement, stores the subscription locally with `signed_with_key_id` |
 | POST | `/terminations` | public; signs, calls `partner_app` terminate, stores the subscription locally |

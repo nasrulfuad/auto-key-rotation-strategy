@@ -12,6 +12,7 @@ import (
 )
 
 type SigningKeyRepository struct {
+	db               *sql.DB
 	queries          store.Querier
 	privateKeySealer port.PrivateKeySealer
 }
@@ -21,16 +22,40 @@ var (
 	_ port.SigningKeyWriter = (*SigningKeyRepository)(nil)
 )
 
-func NewSigningKeyRepository(queries store.Querier, privateKeySealer port.PrivateKeySealer) *SigningKeyRepository {
-	return &SigningKeyRepository{queries: queries, privateKeySealer: privateKeySealer}
+func NewSigningKeyRepository(db *sql.DB, queries store.Querier, privateKeySealer port.PrivateKeySealer) *SigningKeyRepository {
+	return &SigningKeyRepository{db: db, queries: queries, privateKeySealer: privateKeySealer}
 }
 
 func (r *SigningKeyRepository) Create(ctx context.Context, in port.SigningKeyCreate) (domain.SigningKey, error) {
+	return r.create(ctx, r.queries, in)
+}
+
+func (r *SigningKeyRepository) Rotate(ctx context.Context, in port.SigningKeyRotate) (domain.SigningKey, error) {
+	var nextKey domain.SigningKey
+	err := withTransaction(ctx, r.db, func(queries *store.Queries) error {
+		updated, err := queries.UpdateSigningKeyWindow(ctx, store.UpdateSigningKeyWindowParams{
+			ID:          in.CurrentKeyID,
+			ActiveUntil: in.CurrentKeyWindow.ActiveUntil,
+			DeleteAfter: in.CurrentKeyWindow.DeleteAfter,
+		})
+		if err != nil {
+			return domain.DB(err)
+		}
+		if updated == 0 {
+			return domain.ErrSigningKeyNotFound
+		}
+		nextKey, err = r.create(ctx, queries, in.NextKey)
+		return err
+	})
+	return nextKey, err
+}
+
+func (r *SigningKeyRepository) create(ctx context.Context, queries store.Querier, in port.SigningKeyCreate) (domain.SigningKey, error) {
 	ciphertext, nonce, err := r.privateKeySealer.Seal(in.KeyPair.PrivateKey.Reveal())
 	if err != nil {
 		return domain.SigningKey{}, domain.Internal(err)
 	}
-	row, err := r.queries.InsertSigningKey(ctx, store.InsertSigningKeyParams{
+	row, err := queries.InsertSigningKey(ctx, store.InsertSigningKeyParams{
 		ID:                   in.ID,
 		KeyID:                in.KeyPair.KeyID,
 		Algorithm:            string(in.KeyPair.Algorithm),

@@ -182,3 +182,69 @@ func (_c *MockSigningKeyWriter_DeleteExpired_Call) RunAndReturn(run func(ctx con
 	_c.Call.Return(run)
 	return _c
 }
+
+// Rotate provides a mock function for the type MockSigningKeyWriter
+func (_mock *MockSigningKeyWriter) Rotate(ctx context.Context, in port.SigningKeyRotate) (domain.SigningKey, error) {
+	ret := _mock.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Rotate")
+	}
+
+	var r0 domain.SigningKey
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, port.SigningKeyRotate) (domain.SigningKey, error)); ok {
+		return returnFunc(ctx, in)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, port.SigningKeyRotate) domain.SigningKey); ok {
+		r0 = returnFunc(ctx, in)
+	} else {
+		r0 = ret.Get(0).(domain.SigningKey)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, port.SigningKeyRotate) error); ok {
+		r1 = returnFunc(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockSigningKeyWriter_Rotate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Rotate'
+type MockSigningKeyWriter_Rotate_Call struct {
+	*mock.Call
+}
+
+// Rotate is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in port.SigningKeyRotate
+func (_e *MockSigningKeyWriter_Expecter) Rotate(ctx any, in any) *MockSigningKeyWriter_Rotate_Call {
+	return &MockSigningKeyWriter_Rotate_Call{Call: _e.mock.On("Rotate", ctx, in)}
+}
+
+func (_c *MockSigningKeyWriter_Rotate_Call) Run(run func(ctx context.Context, in port.SigningKeyRotate)) *MockSigningKeyWriter_Rotate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 port.SigningKeyRotate
+		if args[1] != nil {
+			arg1 = args[1].(port.SigningKeyRotate)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockSigningKeyWriter_Rotate_Call) Return(signingKey domain.SigningKey, err error) *MockSigningKeyWriter_Rotate_Call {
+	_c.Call.Return(signingKey, err)
+	return _c
+}
+
+func (_c *MockSigningKeyWriter_Rotate_Call) RunAndReturn(run func(ctx context.Context, in port.SigningKeyRotate) (domain.SigningKey, error)) *MockSigningKeyWriter_Rotate_Call {
+	_c.Call.Return(run)
+	return _c
+}

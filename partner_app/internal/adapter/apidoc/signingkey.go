@@ -32,6 +32,12 @@ type SigningKeyList struct {
 	Data []SigningKey `json:"data"`
 }
 
+type SigningKeyRotation struct {
+	Now        time.Time  `json:"now" example:"2026-01-01T00:25:00Z"`
+	CurrentKey SigningKey `json:"current_key"`
+	NextKey    SigningKey `json:"next_key"`
+}
+
 type PeerSigningKey struct {
 	KeyID     string    `json:"key_id" example:"NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs"`
 	Algorithm string    `json:"algorithm" example:"RS256"`

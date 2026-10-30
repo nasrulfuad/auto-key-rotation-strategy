@@ -139,3 +139,61 @@ func TestSigningKeyScheduleValidateRejectsTokenOutlivingInactivePhase(t *testing
 	long := domain.SigningKeySchedule{PendingDuration: time.Hour, ActiveDuration: time.Hour, InactiveDuration: 48 * time.Hour}
 	assert.Error(t, long.Validate(25*time.Hour))
 }
+
+func TestSigningKeySchedulePlanRotationShortensCurrentKeyToOnePendingPhase(t *testing.T) {
+	schedule := testSchedule()
+	latestWindow, _, _ := schedule.PlanNext(nil, baseTime)
+	latest := keyWithWindow(latestWindow)
+	now := baseTime.Add(3 * time.Minute)
+
+	rotation, err := schedule.PlanRotation(&latest, now)
+
+	require.NoError(t, err)
+	activeFrom := now.Add(5 * time.Minute)
+	assert.Equal(t, domain.SigningKeyWindow{
+		IntroducedAt: now, ActiveFrom: activeFrom,
+		ActiveUntil: activeFrom.Add(20 * time.Minute), DeleteAfter: activeFrom.Add(30 * time.Minute),
+	}, rotation.NextKeyWindow)
+	assert.Equal(t, domain.SigningKeyWindow{
+		IntroducedAt: latestWindow.IntroducedAt, ActiveFrom: latestWindow.ActiveFrom,
+		ActiveUntil: activeFrom, DeleteAfter: activeFrom.Add(10 * time.Minute),
+	}, rotation.CurrentKeyWindow)
+}
+
+func TestSigningKeySchedulePlanRotationKeepsCurrentKeyEndingInsideItsPendingPhase(t *testing.T) {
+	schedule := testSchedule()
+	latestWindow, _, _ := schedule.PlanNext(nil, baseTime)
+	latest := keyWithWindow(latestWindow)
+	now := latestWindow.ActiveUntil.Add(-2 * time.Minute)
+
+	rotation, err := schedule.PlanRotation(&latest, now)
+
+	require.NoError(t, err)
+	assert.Equal(t, latestWindow, rotation.CurrentKeyWindow)
+	assert.Equal(t, now, rotation.NextKeyWindow.IntroducedAt)
+	assert.Equal(t, latestWindow.ActiveUntil, rotation.NextKeyWindow.ActiveFrom)
+}
+
+func TestSigningKeySchedulePlanRotationRejectsWhenPendingKeyExists(t *testing.T) {
+	schedule := testSchedule()
+	latestWindow, _, _ := schedule.PlanNext(nil, baseTime)
+	current := keyWithWindow(latestWindow)
+	nextWindow, _, _ := schedule.PlanNext(&current, baseTime.Add(16*time.Minute))
+	pending := keyWithWindow(nextWindow)
+
+	_, err := schedule.PlanRotation(&pending, baseTime.Add(17*time.Minute))
+
+	require.ErrorIs(t, err, domain.ErrSigningKeyAlreadyPending)
+}
+
+func TestSigningKeySchedulePlanRotationRejectsWithoutActiveKey(t *testing.T) {
+	schedule := testSchedule()
+	latestWindow, _, _ := schedule.PlanNext(nil, baseTime)
+	retired := keyWithWindow(latestWindow)
+
+	_, errWithoutKey := schedule.PlanRotation(nil, baseTime)
+	_, errAfterActivePhase := schedule.PlanRotation(&retired, latestWindow.ActiveUntil)
+
+	require.ErrorIs(t, errWithoutKey, domain.ErrSigningKeyNotFound)
+	require.ErrorIs(t, errAfterActivePhase, domain.ErrSigningKeyNotFound)
+}

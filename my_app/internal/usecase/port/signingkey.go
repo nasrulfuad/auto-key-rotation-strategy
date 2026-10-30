@@ -15,6 +15,12 @@ type SigningKeyCreate struct {
 	Window  domain.SigningKeyWindow
 }
 
+type SigningKeyRotate struct {
+	CurrentKeyID     uuid.UUID
+	CurrentKeyWindow domain.SigningKeyWindow
+	NextKey          SigningKeyCreate
+}
+
 type SigningKeyReader interface {
 	FindLatest(ctx context.Context) (*domain.SigningKey, error)
 	FindActive(ctx context.Context, now time.Time) (domain.SigningKey, error)
@@ -25,6 +31,7 @@ type SigningKeyReader interface {
 
 type SigningKeyWriter interface {
 	Create(ctx context.Context, in SigningKeyCreate) (domain.SigningKey, error)
+	Rotate(ctx context.Context, in SigningKeyRotate) (domain.SigningKey, error)
 	DeleteExpired(ctx context.Context, now time.Time) ([]string, error)
 }
 

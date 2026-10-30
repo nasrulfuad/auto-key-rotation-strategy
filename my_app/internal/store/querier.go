@@ -22,6 +22,7 @@ type Querier interface {
 	ListAllSubscriptions(ctx context.Context, rowLimit int32) ([]Subscription, error)
 	LockJob(ctx context.Context, jobName string) (bool, error)
 	Ping(ctx context.Context) (int32, error)
+	UpdateSigningKeyWindow(ctx context.Context, arg UpdateSigningKeyWindowParams) (int64, error)
 	UpsertSubscription(ctx context.Context, arg UpsertSubscriptionParams) (Subscription, error)
 }
 

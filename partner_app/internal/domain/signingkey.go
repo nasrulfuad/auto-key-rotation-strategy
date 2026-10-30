@@ -133,6 +133,32 @@ func (s SigningKeySchedule) PlanNext(latest *SigningKey, now time.Time) (Signing
 	return s.windowFrom(now, latest.Window.ActiveUntil), SigningKeyPlanReasonRotation, true
 }
 
+type SigningKeyRotation struct {
+	CurrentKeyWindow SigningKeyWindow
+	NextKeyWindow    SigningKeyWindow
+}
+
+func (s SigningKeySchedule) PlanRotation(latest *SigningKey, now time.Time) (SigningKeyRotation, error) {
+	if latest == nil {
+		return SigningKeyRotation{}, ErrSigningKeyNotFound
+	}
+	switch latest.StatusAt(now) {
+	case SigningKeyStatusPending:
+		return SigningKeyRotation{}, ErrSigningKeyAlreadyPending
+	case SigningKeyStatusActive:
+	default:
+		return SigningKeyRotation{}, ErrSigningKeyNotFound
+	}
+	activeFrom := now.Add(s.PendingDuration)
+	if latest.Window.ActiveUntil.Before(activeFrom) {
+		activeFrom = latest.Window.ActiveUntil
+	}
+	currentKeyWindow := latest.Window
+	currentKeyWindow.ActiveUntil = activeFrom
+	currentKeyWindow.DeleteAfter = activeFrom.Add(s.InactiveDuration)
+	return SigningKeyRotation{CurrentKeyWindow: currentKeyWindow, NextKeyWindow: s.windowFrom(now, activeFrom)}, nil
+}
+
 func (s SigningKeySchedule) windowFrom(introducedAt, activeFrom time.Time) SigningKeyWindow {
 	activeUntil := activeFrom.Add(s.ActiveDuration)
 	return SigningKeyWindow{

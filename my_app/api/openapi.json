@@ -326,6 +326,21 @@
                 },
                 "type": "object"
             },
+            "apidoc.SigningKeyRotation": {
+                "properties": {
+                    "current_key": {
+                        "$ref": "#/components/schemas/apidoc.SigningKey"
+                    },
+                    "next_key": {
+                        "$ref": "#/components/schemas/apidoc.SigningKey"
+                    },
+                    "now": {
+                        "example": "2026-01-01T00:25:00Z",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "apidoc.Subscription": {
                 "properties": {
                     "activated_at": {
@@ -710,6 +725,57 @@
                     }
                 },
                 "summary": "Lifecycle of every signing key (debug)",
+                "tags": [
+                    "signing-key"
+                ]
+            }
+        },
+        "/signing-keys/rotate": {
+            "post": {
+                "description": "Creates the next signing key as pending, published in the JWKS at once and signing after KEY_PENDING_DURATION, and moves the active_until of the current key to that instant so there is no gap and never two signing keys. Rejected while a pending key exists or when no key is active. Not protected: sandbox only.",
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.SigningKeyRotation"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "SIGNING_KEY_ALREADY_PENDING or SIGNING_KEY_ROTATION_IN_PROGRESS"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    },
+                    "503": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "SIGNING_KEY_NOT_FOUND"
+                    }
+                },
+                "summary": "Rotate the signing key now (debug)",
                 "tags": [
                     "signing-key"
                 ]

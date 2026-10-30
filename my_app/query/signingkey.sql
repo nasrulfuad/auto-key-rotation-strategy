@@ -7,6 +7,11 @@ INSERT INTO signing_key (
 )
 RETURNING id, key_id, algorithm, public_key_modulus, public_key_exponent, introduced_at, active_from, active_until, delete_after, created_at;
 
+-- name: UpdateSigningKeyWindow :execrows
+UPDATE signing_key
+SET active_until = sqlc.arg(active_until)::TIMESTAMPTZ, delete_after = sqlc.arg(delete_after)::TIMESTAMPTZ
+WHERE id = sqlc.arg(id)::UUID;
+
 -- name: FindLatestSigningKey :one
 SELECT id, key_id, algorithm, public_key_modulus, public_key_exponent, introduced_at, active_from, active_until, delete_after, created_at
 FROM signing_key

@@ -12,6 +12,7 @@ const (
 	KindServiceUnavailable
 	KindBadGateway
 	KindInternal
+	KindConflict
 )
 
 type Error struct {
@@ -47,7 +48,7 @@ func (e *Error) Error() string {
 		return withReason("resource not found", e.reason)
 	case KindUnauthorized:
 		return withReason("unauthorized", e.reason)
-	case KindBadRequest:
+	case KindBadRequest, KindConflict:
 		return e.msg
 	case KindServiceUnavailable, KindBadGateway:
 		if e.cause != nil {
@@ -86,6 +87,10 @@ func Invalid(field, message string) *Error {
 	return &Error{kind: KindBadRequest, code: "VALIDATION_FAILED", field: field, msg: message}
 }
 
+func ConflictCoded(code, message string) *Error {
+	return &Error{kind: KindConflict, code: code, msg: message}
+}
+
 func NotFound(reason string) *Error { return &Error{kind: KindNotFound, reason: reason} }
 
 func NotFoundCoded(code, reason string) *Error {
@@ -113,6 +118,7 @@ var (
 	ErrBadRequest         = &Error{kind: KindBadRequest}
 	ErrServiceUnavailable = &Error{kind: KindServiceUnavailable}
 	ErrBadGateway         = &Error{kind: KindBadGateway}
+	ErrConflict           = &Error{kind: KindConflict}
 	ErrInternal           = &Error{kind: KindInternal}
 )
 
@@ -128,3 +134,8 @@ func TokenInvalid(reason string) *Error { return UnauthorizedCoded("TOKEN_INVALI
 func TokenClaimInvalid(reason string) *Error { return UnauthorizedCoded("TOKEN_CLAIM_INVALID", reason) }
 
 var ErrSigningKeyNotFound = ServiceUnavailableCoded("SIGNING_KEY_NOT_FOUND", "no signing key is active")
+
+var (
+	ErrSigningKeyAlreadyPending     = ConflictCoded("SIGNING_KEY_ALREADY_PENDING", "a pending signing key already exists; rotate again after it becomes active")
+	ErrSigningKeyRotationInProgress = ConflictCoded("SIGNING_KEY_ROTATION_IN_PROGRESS", "another signing key rotation is running; retry shortly")
+)

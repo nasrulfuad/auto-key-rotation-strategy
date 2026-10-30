@@ -67,6 +67,7 @@ func (r *Router) Table() []Route {
 		{Method: http.MethodGet, Path: "/health/db", Handler: r.health.CheckReadiness, Access: Public},
 		{Method: http.MethodGet, Path: "/.well-known/jwks.json", Handler: r.signingKey.ListPublishedSigningKeys, Access: Public},
 		{Method: http.MethodGet, Path: "/signing-keys", Handler: r.signingKey.ListSigningKeys, Access: Public},
+		{Method: http.MethodPost, Path: "/signing-keys/rotate", Handler: r.signingKey.RotateSigningKey, Access: Public},
 		{Method: http.MethodGet, Path: "/peer-signing-keys", Handler: r.peerSigningKey.ListPeerSigningKeys, Access: Public},
 		{Method: http.MethodPost, Path: "/activations", Handler: r.subscription.ActivateSubscription, Access: Public},
 		{Method: http.MethodPost, Path: "/terminations", Handler: r.subscription.TerminateSubscription, Access: Public},

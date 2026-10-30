@@ -27,6 +27,7 @@ type Querier interface {
 	UpdateActivationNotificationAttemptFailed(ctx context.Context, arg UpdateActivationNotificationAttemptFailedParams) error
 	UpdateActivationNotificationSent(ctx context.Context, arg UpdateActivationNotificationSentParams) error
 	UpdateEntitlementTermination(ctx context.Context, arg UpdateEntitlementTerminationParams) (UpdateEntitlementTerminationRow, error)
+	UpdateSigningKeyWindow(ctx context.Context, arg UpdateSigningKeyWindowParams) (int64, error)
 	UpsertEntitlement(ctx context.Context, arg UpsertEntitlementParams) (UpsertEntitlementRow, error)
 }
 

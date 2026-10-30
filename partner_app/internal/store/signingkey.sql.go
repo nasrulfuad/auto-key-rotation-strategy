@@ -309,3 +309,23 @@ func (q *Queries) ListAllSigningKeys(ctx context.Context) ([]ListAllSigningKeysR
 	}
 	return items, nil
 }
+
+const updateSigningKeyWindow = `-- name: UpdateSigningKeyWindow :execrows
+UPDATE signing_key
+SET active_until = $1::TIMESTAMPTZ, delete_after = $2::TIMESTAMPTZ
+WHERE id = $3::UUID
+`
+
+type UpdateSigningKeyWindowParams struct {
+	ActiveUntil time.Time
+	DeleteAfter time.Time
+	ID          uuid.UUID
+}
+
+func (q *Queries) UpdateSigningKeyWindow(ctx context.Context, arg UpdateSigningKeyWindowParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateSigningKeyWindow, arg.ActiveUntil, arg.DeleteAfter, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}

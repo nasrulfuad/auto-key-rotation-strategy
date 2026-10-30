@@ -30,6 +30,12 @@ type signingKeyListBody struct {
 	Data []signingKeyBody `json:"data"`
 }
 
+type signingKeyRotationBody struct {
+	Now        time.Time      `json:"now"`
+	CurrentKey signingKeyBody `json:"current_key"`
+	NextKey    signingKeyBody `json:"next_key"`
+}
+
 type signingKeyBody struct {
 	KeyID        string    `json:"key_id"`
 	Algorithm    string    `json:"algorithm"`
@@ -60,17 +66,29 @@ func (p *SigningKeyPresenter) ListPublishedSigningKeys(keys []domain.SigningKey)
 func (p *SigningKeyPresenter) ListSigningKeys(out signingkey.ListSigningKeysOutput) signingKeyListBody {
 	body := signingKeyListBody{Now: out.Now, Data: make([]signingKeyBody, 0, len(out.Keys))}
 	for _, key := range out.Keys {
-		body.Data = append(body.Data, signingKeyBody{
-			KeyID:        key.KeyID,
-			Algorithm:    string(key.Algorithm),
-			Status:       string(key.StatusAt(out.Now)),
-			IsPublished:  key.IsPublishedAt(out.Now),
-			IntroducedAt: key.Window.IntroducedAt,
-			ActiveFrom:   key.Window.ActiveFrom,
-			ActiveUntil:  key.Window.ActiveUntil,
-			DeleteAfter:  key.Window.DeleteAfter,
-			CreatedAt:    key.CreatedAt,
-		})
+		body.Data = append(body.Data, toSigningKeyBody(key, out.Now))
 	}
 	return body
+}
+
+func (p *SigningKeyPresenter) RotateSigningKey(out signingkey.RotateSigningKeyOutput) signingKeyRotationBody {
+	return signingKeyRotationBody{
+		Now:        out.Now,
+		CurrentKey: toSigningKeyBody(out.CurrentKey, out.Now),
+		NextKey:    toSigningKeyBody(out.NextKey, out.Now),
+	}
+}
+
+func toSigningKeyBody(key domain.SigningKey, now time.Time) signingKeyBody {
+	return signingKeyBody{
+		KeyID:        key.KeyID,
+		Algorithm:    string(key.Algorithm),
+		Status:       string(key.StatusAt(now)),
+		IsPublished:  key.IsPublishedAt(now),
+		IntroducedAt: key.Window.IntroducedAt,
+		ActiveFrom:   key.Window.ActiveFrom,
+		ActiveUntil:  key.Window.ActiveUntil,
+		DeleteAfter:  key.Window.DeleteAfter,
+		CreatedAt:    key.CreatedAt,
+	}
 }
