@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
 )
 
 type errorBody struct {
@@ -77,12 +77,12 @@ func PublicMessage(err *domain.Error) string {
 }
 
 type ErrorPresenter struct {
-	logger port.Logger
+	logger logging.Logger
 }
 
-func NewErrorPresenter(logger port.Logger) *ErrorPresenter {
+func NewErrorPresenter(logger logging.Logger) *ErrorPresenter {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &ErrorPresenter{logger: logger}
 }

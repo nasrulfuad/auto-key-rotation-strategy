@@ -3,8 +3,10 @@ package entitlement
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
 type UpsertEntitlementInput struct {
@@ -16,23 +18,23 @@ type UpsertEntitlementInput struct {
 }
 
 type UpsertEntitlementInteractor struct {
-	entitlementWriter port.EntitlementWriter
-	clock             port.Clock
-	uuidGenerator     port.UUIDGenerator
-	logger            port.Logger
+	entitlementWriter repository.EntitlementWriter
+	clock             systemclock.Clock
+	uuidGenerator     systemclock.UUIDGenerator
+	logger            logging.Logger
 
 	peerProvider string
 }
 
 func NewUpsertEntitlementInteractor(
-	entitlementWriter port.EntitlementWriter,
-	clock port.Clock,
-	uuidGenerator port.UUIDGenerator,
-	logger port.Logger,
+	entitlementWriter repository.EntitlementWriter,
+	clock systemclock.Clock,
+	uuidGenerator systemclock.UUIDGenerator,
+	logger logging.Logger,
 	peerProvider string,
 ) *UpsertEntitlementInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &UpsertEntitlementInteractor{
 		entitlementWriter: entitlementWriter,
@@ -51,7 +53,7 @@ func (i *UpsertEntitlementInteractor) Execute(ctx context.Context, in UpsertEnti
 	if err != nil {
 		return domain.Entitlement{}, err
 	}
-	entitlement, err := i.entitlementWriter.Upsert(ctx, port.EntitlementUpsert{
+	entitlement, err := i.entitlementWriter.Upsert(ctx, repository.EntitlementUpsert{
 		ID:                       i.uuidGenerator.NewUUID(),
 		ActivationNotificationID: i.uuidGenerator.NewUUID(),
 		Change:                   change,

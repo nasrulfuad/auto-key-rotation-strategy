@@ -3,8 +3,11 @@ package activationnotification
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
 type TokenSigner interface {
@@ -12,12 +15,12 @@ type TokenSigner interface {
 }
 
 type DeliverActivationNotificationsInteractor struct {
-	activationNotificationReader port.ActivationNotificationReader
-	activationNotificationWriter port.ActivationNotificationWriter
-	activationNotificationSender port.ActivationNotificationSender
+	activationNotificationReader repository.ActivationNotificationReader
+	activationNotificationWriter repository.ActivationNotificationWriter
+	activationNotificationSender gateway.ActivationNotificationSender
 	tokenSigner                  TokenSigner
-	clock                        port.Clock
-	logger                       port.Logger
+	clock                        systemclock.Clock
+	logger                       logging.Logger
 
 	audience        domain.TokenAudience
 	batchSize       int
@@ -25,18 +28,18 @@ type DeliverActivationNotificationsInteractor struct {
 }
 
 func NewDeliverActivationNotificationsInteractor(
-	activationNotificationReader port.ActivationNotificationReader,
-	activationNotificationWriter port.ActivationNotificationWriter,
-	activationNotificationSender port.ActivationNotificationSender,
+	activationNotificationReader repository.ActivationNotificationReader,
+	activationNotificationWriter repository.ActivationNotificationWriter,
+	activationNotificationSender gateway.ActivationNotificationSender,
 	tokenSigner TokenSigner,
-	clock port.Clock,
-	logger port.Logger,
+	clock systemclock.Clock,
+	logger logging.Logger,
 	audience domain.TokenAudience,
 	batchSize int,
 	maximumAttempts int,
 ) *DeliverActivationNotificationsInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &DeliverActivationNotificationsInteractor{
 		activationNotificationReader: activationNotificationReader,
@@ -74,7 +77,7 @@ func (i *DeliverActivationNotificationsInteractor) deliver(ctx context.Context, 
 	if err != nil {
 		return err
 	}
-	sendErr := i.activationNotificationSender.Send(ctx, port.ActivationNotificationDelivery{Token: signed.Value, Notification: notification})
+	sendErr := i.activationNotificationSender.Send(ctx, gateway.ActivationNotificationDelivery{Token: signed.Value, Notification: notification})
 	now := i.clock.Now()
 	fields := []any{
 		"notification_id", notification.ID,
@@ -97,7 +100,7 @@ func (i *DeliverActivationNotificationsInteractor) deliver(ctx context.Context, 
 		i.logger.Warn(ctx, "activation notification delivery failed; retry scheduled at next_attempt_at",
 			append(fields, "next_attempt_at", result.NextAttemptAt)...)
 	}
-	return i.activationNotificationWriter.UpdateAttemptFailed(ctx, port.ActivationNotificationAttempt{
+	return i.activationNotificationWriter.UpdateAttemptFailed(ctx, repository.ActivationNotificationAttempt{
 		ID:        notification.ID,
 		Result:    result,
 		LastError: sendErr.Error(),

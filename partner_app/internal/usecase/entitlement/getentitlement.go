@@ -3,8 +3,8 @@ package entitlement
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
 )
 
 type GetEntitlementInput struct {
@@ -14,12 +14,12 @@ type GetEntitlementInput struct {
 }
 
 type GetEntitlementInteractor struct {
-	entitlementReader port.EntitlementReader
+	entitlementReader repository.EntitlementReader
 
 	peerProvider string
 }
 
-func NewGetEntitlementInteractor(entitlementReader port.EntitlementReader, peerProvider string) *GetEntitlementInteractor {
+func NewGetEntitlementInteractor(entitlementReader repository.EntitlementReader, peerProvider string) *GetEntitlementInteractor {
 	return &GetEntitlementInteractor{entitlementReader: entitlementReader, peerProvider: peerProvider}
 }
 

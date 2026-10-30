@@ -3,17 +3,17 @@ package subscription
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 )
 
 const maximumSubscriptions = 100
 
 type ListSubscriptionsInteractor struct {
-	subscriptionReader port.SubscriptionReader
+	subscriptionReader repository.SubscriptionReader
 }
 
-func NewListSubscriptionsInteractor(subscriptionReader port.SubscriptionReader) *ListSubscriptionsInteractor {
+func NewListSubscriptionsInteractor(subscriptionReader repository.SubscriptionReader) *ListSubscriptionsInteractor {
 	return &ListSubscriptionsInteractor{subscriptionReader: subscriptionReader}
 }
 

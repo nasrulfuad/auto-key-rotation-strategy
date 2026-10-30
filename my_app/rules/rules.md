@@ -7,14 +7,17 @@ These rules apply to every change in `my_app`. They mirror `pricing/backend/rule
 ```
 cmd/server          entry point
   internal/di       composition root, the only place that sees the whole graph
-    internal/infra      config, echo, postgres, clock, logging, scheduler, rsakey, sealer, jwt, jwks
-    internal/adapter    controller/http, presenter, gateway/http, repository/postgres
-      internal/store    sqlc-generated code
-    internal/usecase    interactors + port interfaces
+    internal/adapter    controller/http, presenter, apidoc
+    internal/infra      config, echo, postgres, scheduler
+    internal/usecase    interactors
+    internal/adapter    repository, gateway                         (driven interfaces only)
+      internal/adapter  repository/postgres, gateway/http           (implementations)
+        internal/store  sqlc-generated code
+    internal/infra      systemclock, logging, rsakey, sealer, jwt, jwks   (<role>.go interface + <role>impl.go implementation)
     internal/domain     entities, value objects, rules
 ```
 
-Dependencies point inward only: `infra/adapter -> usecase -> domain`. depguard in `.golangci.yml` fails the lint when they do not.
+Repository and gateway interfaces live in the layer packages `adapter/repository` (`<entity>repository.go`) and `adapter/gateway` (`<entity>gateway.go`); use cases import those, never `repository/postgres` or `gateway/http`. Infrastructure interfaces live in the implementing package, each in its own `<role>.go` file, with the implementation in `<role>impl.go` (`infra/jwt/tokenissuer.go` and `infra/jwt/tokenissuerimpl.go`). Use cases never import the driving side: `adapter/controller`, `adapter/presenter`, `adapter/apidoc`, `infra/echo`, `infra/scheduler`, `infra/config` and `di`. depguard in `.golangci.yml` fails the lint when they do.
 
 ## 2. Domain (`internal/domain`)
 
@@ -25,15 +28,18 @@ Dependencies point inward only: `infra/adapter -> usecase -> domain`. depguard i
 ## 3. Use cases (`internal/usecase`)
 
 - One interactor per file, `<Verb><Object>Interactor` with a single `Execute(ctx, in)`.
-- Dependencies are port interfaces from `internal/usecase/port`, injected through the constructor and named after the interface.
+- Dependencies are interfaces (`repository.SigningKeyReader`, `gateway.PartnerEntitlementGateway`, `systemclock.Clock`, `logging.Logger`), injected through the constructor and named after the interface.
 - `Clock.Now()` is called once per `Execute` and passed down.
-- May not import Echo, `database/sql`, `golang-jwt`, `internal/store`, `internal/adapter` or `internal/infra`.
+- May not import Echo, `database/sql`, `golang-jwt`, `internal/store` or the driving adapters and infrastructure listed in section 1.
 - A dependency implemented by another use case (the token `Signer`) is consumed through a small interface declared in the consuming package (`TokenSigner`).
 
-## 4. Ports (`internal/usecase/port`)
+## 4. Driven interfaces
 
-- `<Entity>Reader` / `<Entity>Writer` for persistence; role nouns for everything else (`KeyPairGenerator`, `TokenIssuer`, `TokenVerifier`, `PeerKeySet`, `PrivateKeySealer`, `JobLock`).
-- Mocks are generated with mockery v3 (`make mocks`) into `port/mocks`; never hand-written.
+- Repository: `internal/adapter/repository/<entity>repository.go`, package `repository`, holding `<Entity>Reader` / `<Entity>Writer` and their parameter structs (`SigningKeyCreate`, `SigningKeyRotate`). `JobLock` and `DatabaseProbe` have their own files. Implemented in `repository/postgres` with a compile-time assertion (`var _ repository.SigningKeyReader = (*SigningKeyRepository)(nil)`).
+- Gateway: `internal/adapter/gateway/<entity>gateway.go`, package `gateway`, implemented in `gateway/http`.
+- Infrastructure: one `<role>.go` per interface in the implementing package (`KeyPairGenerator`, `PrivateKeySealer`, `TokenIssuer`, `TokenVerifier`, `PeerKeySet`, `Clock`, `UUIDGenerator`, `Logger`); the implementation file carries the `impl` suffix.
+- Interfaces never share a file with an implementation.
+- Mocks are generated with mockery v3 (`make mocks`, interfaces listed in `.mockery.yml`) into a `<package>mocks` directory next to the interfaces (`repository/repositorymocks`, `gateway/gatewaymocks`, `systemclock/systemclockmocks`); never hand-written.
 
 ## 5. Adapters
 

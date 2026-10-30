@@ -3,17 +3,17 @@ package activationnotification
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 )
 
 const maximumActivationNotifications = 100
 
 type ListActivationNotificationsInteractor struct {
-	activationNotificationReader port.ActivationNotificationReader
+	activationNotificationReader repository.ActivationNotificationReader
 }
 
-func NewListActivationNotificationsInteractor(activationNotificationReader port.ActivationNotificationReader) *ListActivationNotificationsInteractor {
+func NewListActivationNotificationsInteractor(activationNotificationReader repository.ActivationNotificationReader) *ListActivationNotificationsInteractor {
 	return &ListActivationNotificationsInteractor{activationNotificationReader: activationNotificationReader}
 }
 

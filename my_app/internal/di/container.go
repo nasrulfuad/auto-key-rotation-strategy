@@ -13,20 +13,20 @@ import (
 	gateway "github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway/http"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/presenter"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository/postgres"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/clock"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/config"
 	echoserver "github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/echo"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/jwks"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/jwt"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
 	infrapostgres "github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/postgres"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/rsakey"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/scheduler"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/sealer"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/store"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/activationnotification"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/authentication"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/peersigningkey"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/signingkey"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/subscription"
 )
@@ -39,7 +39,7 @@ const (
 )
 
 type Overrides struct {
-	Clock       port.Clock
+	Clock       systemclock.Clock
 	HTTPClient  *http.Client
 	OpenAPISpec []byte
 }
@@ -51,7 +51,7 @@ type Container struct {
 	Signer    *signingkey.Signer
 }
 
-func New(cfg *config.Config, logger port.Logger, openAPISpec []byte) (*Container, error) {
+func New(cfg *config.Config, logger logging.Logger, openAPISpec []byte) (*Container, error) {
 	db, err := infrapostgres.Open(cfg.DatabaseURL, cfg.DatabaseMaxConnections)
 	if err != nil {
 		return nil, err
@@ -63,19 +63,19 @@ func New(cfg *config.Config, logger port.Logger, openAPISpec []byte) (*Container
 	return container, nil
 }
 
-func NewWithDB(cfg *config.Config, db *sql.DB, logger port.Logger, overrides Overrides) (*Container, error) {
+func NewWithDB(cfg *config.Config, db *sql.DB, logger logging.Logger, overrides Overrides) (*Container, error) {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	systemClock := overrides.Clock
 	if systemClock == nil {
-		systemClock = clock.New()
+		systemClock = systemclock.New()
 	}
 	httpClient := overrides.HTTPClient
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 5 * time.Second}
 	}
-	uuidGenerator := clock.NewUUIDGenerator()
+	uuidGenerator := systemclock.NewUUIDGenerator()
 
 	privateKeySealer, err := sealer.NewAESGCM(cfg.KeyEncryptionKey)
 	if err != nil {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 )
 
 const maximumRunDuration = 5 * time.Minute
@@ -21,13 +21,13 @@ type Job struct {
 
 type Runner struct {
 	jobs    []Job
-	jobLock port.JobLock
-	logger  port.Logger
+	jobLock repository.JobLock
+	logger  logging.Logger
 }
 
-func NewRunner(jobLock port.JobLock, logger port.Logger, jobs ...Job) *Runner {
+func NewRunner(jobLock repository.JobLock, logger logging.Logger, jobs ...Job) *Runner {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &Runner{jobs: jobs, jobLock: jobLock, logger: logger}
 }

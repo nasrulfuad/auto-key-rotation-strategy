@@ -10,9 +10,13 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository/repositorymocks"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port/mocks"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/jwt/jwtmocks"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging/loggingmocks"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/rsakey/rsakeymocks"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock/systemclockmocks"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/signingkey"
 )
 
@@ -21,23 +25,23 @@ var now = time.Date(2026, 1, 1, 0, 15, 0, 0, time.UTC)
 var schedule = domain.SigningKeySchedule{PendingDuration: 5 * time.Minute, ActiveDuration: 20 * time.Minute, InactiveDuration: 10 * time.Minute}
 
 type ensureFixture struct {
-	reader    *mocks.MockSigningKeyReader
-	writer    *mocks.MockSigningKeyWriter
-	generator *mocks.MockKeyPairGenerator
-	clock     *mocks.MockClock
-	uuids     *mocks.MockUUIDGenerator
-	logger    *mocks.MockLogger
+	reader    *repositorymocks.MockSigningKeyReader
+	writer    *repositorymocks.MockSigningKeyWriter
+	generator *rsakeymocks.MockKeyPairGenerator
+	clock     *systemclockmocks.MockClock
+	uuids     *systemclockmocks.MockUUIDGenerator
+	logger    *loggingmocks.MockLogger
 	uc        *signingkey.EnsureSigningKeysInteractor
 }
 
 func newEnsureFixture(t *testing.T) ensureFixture {
 	f := ensureFixture{
-		reader:    mocks.NewMockSigningKeyReader(t),
-		writer:    mocks.NewMockSigningKeyWriter(t),
-		generator: mocks.NewMockKeyPairGenerator(t),
-		clock:     mocks.NewMockClock(t),
-		uuids:     mocks.NewMockUUIDGenerator(t),
-		logger:    mocks.NewMockLogger(t),
+		reader:    repositorymocks.NewMockSigningKeyReader(t),
+		writer:    repositorymocks.NewMockSigningKeyWriter(t),
+		generator: rsakeymocks.NewMockKeyPairGenerator(t),
+		clock:     systemclockmocks.NewMockClock(t),
+		uuids:     systemclockmocks.NewMockUUIDGenerator(t),
+		logger:    loggingmocks.NewMockLogger(t),
 	}
 	f.uc = signingkey.NewEnsureSigningKeysInteractor(f.reader, f.writer, f.generator, f.clock, f.uuids, f.logger, schedule, domain.SigningAlgorithmRS256)
 	f.clock.EXPECT().Now().Return(now)
@@ -72,7 +76,7 @@ func TestEnsureSigningKeysCreatesNextKeyWhenPendingPhaseStarts(t *testing.T) {
 		IntroducedAt: now, ActiveFrom: latest.Window.ActiveUntil,
 		ActiveUntil: latest.Window.ActiveUntil.Add(20 * time.Minute), DeleteAfter: latest.Window.ActiveUntil.Add(30 * time.Minute),
 	}
-	f.writer.EXPECT().Create(mock.Anything, port.SigningKeyCreate{ID: id, KeyPair: keyPair, Window: wantWindow}).
+	f.writer.EXPECT().Create(mock.Anything, repository.SigningKeyCreate{ID: id, KeyPair: keyPair, Window: wantWindow}).
 		Return(domain.SigningKey{KeyID: "new", Window: wantWindow}, nil)
 	f.logger.EXPECT().Info(mock.Anything,
 		"next signing key created as pending; generated a key pair, stored it and published it in the JWKS so peers fetch it before it signs at active_from",
@@ -100,7 +104,7 @@ func TestEnsureSigningKeysWarnsOnRecovery(t *testing.T) {
 	f.reader.EXPECT().FindLatest(mock.Anything).Return(&latest, nil)
 	f.generator.EXPECT().Generate(mock.Anything, domain.SigningAlgorithmRS256).Return(domain.KeyPair{KeyID: "fresh"}, nil)
 	f.uuids.EXPECT().NewUUID().Return(uuid.New())
-	f.writer.EXPECT().Create(mock.Anything, mock.MatchedBy(func(in port.SigningKeyCreate) bool {
+	f.writer.EXPECT().Create(mock.Anything, mock.MatchedBy(func(in repository.SigningKeyCreate) bool {
 		return in.Window.ActiveFrom.Equal(now) && in.Window.IntroducedAt.Equal(now)
 	})).Return(domain.SigningKey{KeyID: "fresh"}, nil)
 	f.logger.EXPECT().Warn(mock.Anything,
@@ -124,9 +128,9 @@ func TestEnsureSigningKeysLogsBootstrapWhenNoKeyExists(t *testing.T) {
 }
 
 func TestDeleteExpiredSigningKeysLogsEveryDeletedKey(t *testing.T) {
-	writer := mocks.NewMockSigningKeyWriter(t)
-	clock := mocks.NewMockClock(t)
-	logger := mocks.NewMockLogger(t)
+	writer := repositorymocks.NewMockSigningKeyWriter(t)
+	clock := systemclockmocks.NewMockClock(t)
+	logger := loggingmocks.NewMockLogger(t)
 	clock.EXPECT().Now().Return(now)
 	writer.EXPECT().DeleteExpired(mock.Anything, now).Return([]string{"a", "b"}, nil)
 	for _, keyID := range []string{"a", "b"} {
@@ -141,10 +145,10 @@ func TestDeleteExpiredSigningKeysLogsEveryDeletedKey(t *testing.T) {
 }
 
 func TestSignerUsesActiveKeyAndTruncatesIssuedAt(t *testing.T) {
-	reader := mocks.NewMockSigningKeyReader(t)
-	issuer := mocks.NewMockTokenIssuer(t)
-	clock := mocks.NewMockClock(t)
-	uuids := mocks.NewMockUUIDGenerator(t)
+	reader := repositorymocks.NewMockSigningKeyReader(t)
+	issuer := jwtmocks.NewMockTokenIssuer(t)
+	clock := systemclockmocks.NewMockClock(t)
+	uuids := systemclockmocks.NewMockUUIDGenerator(t)
 	instant := now.Add(1500 * time.Millisecond)
 	jti := uuid.New()
 	key := domain.SigningKey{KeyID: "active"}

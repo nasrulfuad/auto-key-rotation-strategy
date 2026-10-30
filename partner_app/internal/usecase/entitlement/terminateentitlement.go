@@ -3,8 +3,10 @@ package entitlement
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
 type TerminateEntitlementInput struct {
@@ -14,23 +16,23 @@ type TerminateEntitlementInput struct {
 }
 
 type TerminateEntitlementInteractor struct {
-	entitlementWriter port.EntitlementWriter
-	clock             port.Clock
-	uuidGenerator     port.UUIDGenerator
-	logger            port.Logger
+	entitlementWriter repository.EntitlementWriter
+	clock             systemclock.Clock
+	uuidGenerator     systemclock.UUIDGenerator
+	logger            logging.Logger
 
 	peerProvider string
 }
 
 func NewTerminateEntitlementInteractor(
-	entitlementWriter port.EntitlementWriter,
-	clock port.Clock,
-	uuidGenerator port.UUIDGenerator,
-	logger port.Logger,
+	entitlementWriter repository.EntitlementWriter,
+	clock systemclock.Clock,
+	uuidGenerator systemclock.UUIDGenerator,
+	logger logging.Logger,
 	peerProvider string,
 ) *TerminateEntitlementInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &TerminateEntitlementInteractor{
 		entitlementWriter: entitlementWriter,
@@ -49,7 +51,7 @@ func (i *TerminateEntitlementInteractor) Execute(ctx context.Context, in Termina
 	if err != nil {
 		return domain.Entitlement{}, err
 	}
-	entitlement, err := i.entitlementWriter.Terminate(ctx, port.EntitlementTerminate{
+	entitlement, err := i.entitlementWriter.Terminate(ctx, repository.EntitlementTerminate{
 		ActivationNotificationID: i.uuidGenerator.NewUUID(),
 		Termination:              termination,
 		Now:                      i.clock.Now(),

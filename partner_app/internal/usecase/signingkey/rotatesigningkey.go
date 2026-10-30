@@ -4,8 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/rsakey"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
 type RotateSigningKeyOutput struct {
@@ -15,13 +18,13 @@ type RotateSigningKeyOutput struct {
 }
 
 type RotateSigningKeyInteractor struct {
-	jobLock          port.JobLock
-	signingKeyReader port.SigningKeyReader
-	signingKeyWriter port.SigningKeyWriter
-	keyPairGenerator port.KeyPairGenerator
-	clock            port.Clock
-	uuidGenerator    port.UUIDGenerator
-	logger           port.Logger
+	jobLock          repository.JobLock
+	signingKeyReader repository.SigningKeyReader
+	signingKeyWriter repository.SigningKeyWriter
+	keyPairGenerator rsakey.KeyPairGenerator
+	clock            systemclock.Clock
+	uuidGenerator    systemclock.UUIDGenerator
+	logger           logging.Logger
 
 	lockName  string
 	schedule  domain.SigningKeySchedule
@@ -29,19 +32,19 @@ type RotateSigningKeyInteractor struct {
 }
 
 func NewRotateSigningKeyInteractor(
-	jobLock port.JobLock,
-	signingKeyReader port.SigningKeyReader,
-	signingKeyWriter port.SigningKeyWriter,
-	keyPairGenerator port.KeyPairGenerator,
-	clock port.Clock,
-	uuidGenerator port.UUIDGenerator,
-	logger port.Logger,
+	jobLock repository.JobLock,
+	signingKeyReader repository.SigningKeyReader,
+	signingKeyWriter repository.SigningKeyWriter,
+	keyPairGenerator rsakey.KeyPairGenerator,
+	clock systemclock.Clock,
+	uuidGenerator systemclock.UUIDGenerator,
+	logger logging.Logger,
 	lockName string,
 	schedule domain.SigningKeySchedule,
 	algorithm domain.SigningAlgorithm,
 ) *RotateSigningKeyInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &RotateSigningKeyInteractor{
 		jobLock:          jobLock,
@@ -87,10 +90,10 @@ func (i *RotateSigningKeyInteractor) rotate(ctx context.Context) (RotateSigningK
 	if err != nil {
 		return RotateSigningKeyOutput{}, domain.Internal(err)
 	}
-	nextKey, err := i.signingKeyWriter.Rotate(ctx, port.SigningKeyRotate{
+	nextKey, err := i.signingKeyWriter.Rotate(ctx, repository.SigningKeyRotate{
 		CurrentKeyID:     latest.ID,
 		CurrentKeyWindow: rotation.CurrentKeyWindow,
-		NextKey: port.SigningKeyCreate{
+		NextKey: repository.SigningKeyCreate{
 			ID:      i.uuidGenerator.NewUUID(),
 			KeyPair: keyPair,
 			Window:  rotation.NextKeyWindow,

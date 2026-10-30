@@ -7,16 +7,16 @@ TEST_DATABASE_ADMIN_URL ?= postgres://jwks:jwks@localhost:55432/postgres
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
 
-generate: sqlc mocks docs ## Regenerate internal/store, the port mocks and the OpenAPI spec
+generate: sqlc mocks docs ## Regenerate internal/store, the mocks and the OpenAPI spec
 
 sqlc: ## Regenerate internal/store from query/*.sql and migrations/
 	sqlc generate
 
-mocks: ## Regenerate the port mocks (run after changing an interface in usecase/port)
-	go generate ./internal/usecase/port/
+mocks: ## Regenerate the mocks of the interfaces listed in .mockery.yml (run after changing one of them)
+	go tool mockery
 
 mocks-check: mocks ## Fail when the committed mocks have drifted from the interfaces
-	git diff --exit-code -- internal/usecase/port/mocks
+	git diff --exit-code -- $$(find internal -type d -name '*mocks')
 
 docs: ## Regenerate api/openapi.json from the swag annotations
 	go generate .

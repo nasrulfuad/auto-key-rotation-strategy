@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	gateway "github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway/http"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway"
+	httpgateway "github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway/http"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 )
 
 func TestPartnerEntitlementClientSendsBearerAndMapsRejections(t *testing.T) {
@@ -24,8 +24,8 @@ func TestPartnerEntitlementClientSendsBearerAndMapsRejections(t *testing.T) {
 	}))
 	defer server.Close()
 
-	_, err := gateway.NewPartnerEntitlementClient(server.URL, nil).Terminate(context.Background(),
-		port.PartnerEntitlementTerminate{Token: "jwt", SubjectID: "SUB1", EntitlementID: "ENT1"})
+	_, err := httpgateway.NewPartnerEntitlementClient(server.URL, nil).Terminate(context.Background(),
+		gateway.PartnerEntitlementTerminate{Token: "jwt", SubjectID: "SUB1", EntitlementID: "ENT1"})
 
 	assert.Equal(t, "Bearer jwt", authorization)
 	assert.Equal(t, http.MethodPost, method)
@@ -40,7 +40,7 @@ func TestPartnerEntitlementClientReportsUnreachablePartner(t *testing.T) {
 	server := httptest.NewServer(http.NotFoundHandler())
 	server.Close()
 
-	_, err := gateway.NewPartnerEntitlementClient(server.URL, nil).Upsert(context.Background(), port.PartnerEntitlementUpsert{Token: "jwt"})
+	_, err := httpgateway.NewPartnerEntitlementClient(server.URL, nil).Upsert(context.Background(), gateway.PartnerEntitlementUpsert{Token: "jwt"})
 
 	assert.ErrorIs(t, err, domain.ErrPartnerUnavailable)
 }

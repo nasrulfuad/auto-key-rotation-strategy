@@ -6,31 +6,32 @@ import (
 	"errors"
 	"time"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/sealer"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
 )
 
 type SigningKeyRepository struct {
 	db               *sql.DB
 	queries          store.Querier
-	privateKeySealer port.PrivateKeySealer
+	privateKeySealer sealer.PrivateKeySealer
 }
 
 var (
-	_ port.SigningKeyReader = (*SigningKeyRepository)(nil)
-	_ port.SigningKeyWriter = (*SigningKeyRepository)(nil)
+	_ repository.SigningKeyReader = (*SigningKeyRepository)(nil)
+	_ repository.SigningKeyWriter = (*SigningKeyRepository)(nil)
 )
 
-func NewSigningKeyRepository(db *sql.DB, queries store.Querier, privateKeySealer port.PrivateKeySealer) *SigningKeyRepository {
+func NewSigningKeyRepository(db *sql.DB, queries store.Querier, privateKeySealer sealer.PrivateKeySealer) *SigningKeyRepository {
 	return &SigningKeyRepository{db: db, queries: queries, privateKeySealer: privateKeySealer}
 }
 
-func (r *SigningKeyRepository) Create(ctx context.Context, in port.SigningKeyCreate) (domain.SigningKey, error) {
+func (r *SigningKeyRepository) Create(ctx context.Context, in repository.SigningKeyCreate) (domain.SigningKey, error) {
 	return r.create(ctx, r.queries, in)
 }
 
-func (r *SigningKeyRepository) Rotate(ctx context.Context, in port.SigningKeyRotate) (domain.SigningKey, error) {
+func (r *SigningKeyRepository) Rotate(ctx context.Context, in repository.SigningKeyRotate) (domain.SigningKey, error) {
 	var nextKey domain.SigningKey
 	err := withTransaction(ctx, r.db, func(queries *store.Queries) error {
 		updated, err := queries.UpdateSigningKeyWindow(ctx, store.UpdateSigningKeyWindowParams{
@@ -50,7 +51,7 @@ func (r *SigningKeyRepository) Rotate(ctx context.Context, in port.SigningKeyRot
 	return nextKey, err
 }
 
-func (r *SigningKeyRepository) create(ctx context.Context, queries store.Querier, in port.SigningKeyCreate) (domain.SigningKey, error) {
+func (r *SigningKeyRepository) create(ctx context.Context, queries store.Querier, in repository.SigningKeyCreate) (domain.SigningKey, error) {
 	ciphertext, nonce, err := r.privateKeySealer.Seal(in.KeyPair.PrivateKey.Reveal())
 	if err != nil {
 		return domain.SigningKey{}, domain.Internal(err)

@@ -9,15 +9,15 @@ Module path: `github.com/nasrulfuad/jwks_key_rotation/partner_app`. Working rule
 | Layer | Path | Rule |
 |---|---|---|
 | Entities, schedule, token rules | `internal/domain/` | stdlib + `google/uuid` only; no `net/http`, `database/sql`, `crypto/rsa` |
-| Interactors + driven ports | `internal/usecase/<feature>/`, `internal/usecase/port/` | sees `domain` only |
+| Interactors | `internal/usecase/<feature>/` | sees `domain`, the interfaces in `adapter/repository` and `adapter/gateway`, and the infra interfaces |
 | Route table, controllers, peer auth middleware | `internal/adapter/controller/http/` | `router.go` is the whole HTTP surface |
 | JSON bodies and the error envelope | `internal/adapter/presenter/` | the only place that knows HTTP shapes |
 | Doc-only mirrors of the JSON bodies | `internal/adapter/apidoc/` | kept honest by `apidoc_contract_test.go` in `presenter` and `controller/http` |
-| Outbound HTTP to the peer | `internal/adapter/gateway/http/` | |
-| SQL repositories | `internal/adapter/repository/postgres/` | the only importer of `internal/store` (plus `di`) |
+| Gateway interfaces / outbound HTTP to the peer | `internal/adapter/gateway/` / `internal/adapter/gateway/http/` | `<entity>gateway.go` holds the interface |
+| Repository interfaces / SQL repositories | `internal/adapter/repository/` / `internal/adapter/repository/postgres/` | the only importer of `internal/store` (plus `di`) |
 | SQL / generated code | `query/*.sql` → `internal/store/` | sqlc; `make sqlc` |
 | Schema | `migrations/*.sql` | Up only; sqlc reads it as the schema |
-| RSA, AES-GCM, JWT, JWKS cache, scheduler | `internal/infra/{rsakey,sealer,jwt,jwks,scheduler}` | |
+| RSA, AES-GCM, JWT, JWKS cache, clock, logging, scheduler | `internal/infra/{rsakey,sealer,jwt,jwks,systemclock,logging,scheduler}` | interface in `<role>.go`, implementation in `<role>impl.go`; mocks in `<package>mocks` |
 | Wiring | `internal/di/container.go` | `NewWithDB` is reused by the integration tests |
 | Integration tests | `internal/integration/` | build tag `integration`, needs `TEST_DATABASE_ADMIN_URL` |
 

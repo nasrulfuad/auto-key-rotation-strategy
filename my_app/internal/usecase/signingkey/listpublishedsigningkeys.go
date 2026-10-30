@@ -3,16 +3,17 @@ package signingkey
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
 )
 
 type ListPublishedSigningKeysInteractor struct {
-	signingKeyReader port.SigningKeyReader
-	clock            port.Clock
+	signingKeyReader repository.SigningKeyReader
+	clock            systemclock.Clock
 }
 
-func NewListPublishedSigningKeysInteractor(signingKeyReader port.SigningKeyReader, clock port.Clock) *ListPublishedSigningKeysInteractor {
+func NewListPublishedSigningKeysInteractor(signingKeyReader repository.SigningKeyReader, clock systemclock.Clock) *ListPublishedSigningKeysInteractor {
 	return &ListPublishedSigningKeysInteractor{signingKeyReader: signingKeyReader, clock: clock}
 }
 

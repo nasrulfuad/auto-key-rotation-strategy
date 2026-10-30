@@ -21,7 +21,6 @@ import (
 	"github.com/joho/godotenv"
 
 	myapp "github.com/nasrulfuad/jwks_key_rotation/my_app"
-
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/di"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/config"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"

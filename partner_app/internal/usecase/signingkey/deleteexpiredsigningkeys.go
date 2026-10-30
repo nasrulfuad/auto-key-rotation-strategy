@@ -3,22 +3,24 @@ package signingkey
 import (
 	"context"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
 type DeleteExpiredSigningKeysInteractor struct {
-	signingKeyWriter port.SigningKeyWriter
-	clock            port.Clock
-	logger           port.Logger
+	signingKeyWriter repository.SigningKeyWriter
+	clock            systemclock.Clock
+	logger           logging.Logger
 }
 
 func NewDeleteExpiredSigningKeysInteractor(
-	signingKeyWriter port.SigningKeyWriter,
-	clock port.Clock,
-	logger port.Logger,
+	signingKeyWriter repository.SigningKeyWriter,
+	clock systemclock.Clock,
+	logger logging.Logger,
 ) *DeleteExpiredSigningKeysInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &DeleteExpiredSigningKeysInteractor{signingKeyWriter: signingKeyWriter, clock: clock, logger: logger}
 }

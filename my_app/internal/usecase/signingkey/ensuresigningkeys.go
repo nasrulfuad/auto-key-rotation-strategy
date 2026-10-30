@@ -3,34 +3,37 @@ package signingkey
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/rsakey"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
 )
 
 type EnsureSigningKeysInteractor struct {
-	signingKeyReader port.SigningKeyReader
-	signingKeyWriter port.SigningKeyWriter
-	keyPairGenerator port.KeyPairGenerator
-	clock            port.Clock
-	uuidGenerator    port.UUIDGenerator
-	logger           port.Logger
+	signingKeyReader repository.SigningKeyReader
+	signingKeyWriter repository.SigningKeyWriter
+	keyPairGenerator rsakey.KeyPairGenerator
+	clock            systemclock.Clock
+	uuidGenerator    systemclock.UUIDGenerator
+	logger           logging.Logger
 
 	schedule  domain.SigningKeySchedule
 	algorithm domain.SigningAlgorithm
 }
 
 func NewEnsureSigningKeysInteractor(
-	signingKeyReader port.SigningKeyReader,
-	signingKeyWriter port.SigningKeyWriter,
-	keyPairGenerator port.KeyPairGenerator,
-	clock port.Clock,
-	uuidGenerator port.UUIDGenerator,
-	logger port.Logger,
+	signingKeyReader repository.SigningKeyReader,
+	signingKeyWriter repository.SigningKeyWriter,
+	keyPairGenerator rsakey.KeyPairGenerator,
+	clock systemclock.Clock,
+	uuidGenerator systemclock.UUIDGenerator,
+	logger logging.Logger,
 	schedule domain.SigningKeySchedule,
 	algorithm domain.SigningAlgorithm,
 ) *EnsureSigningKeysInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &EnsureSigningKeysInteractor{
 		signingKeyReader: signingKeyReader,
@@ -58,7 +61,7 @@ func (i *EnsureSigningKeysInteractor) Execute(ctx context.Context) error {
 	if err != nil {
 		return domain.Internal(err)
 	}
-	key, err := i.signingKeyWriter.Create(ctx, port.SigningKeyCreate{
+	key, err := i.signingKeyWriter.Create(ctx, repository.SigningKeyCreate{
 		ID:      i.uuidGenerator.NewUUID(),
 		KeyPair: keyPair,
 		Window:  window,

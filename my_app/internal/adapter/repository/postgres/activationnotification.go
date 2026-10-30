@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/store"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 )
 
 type ActivationNotificationRepository struct {
@@ -13,8 +13,8 @@ type ActivationNotificationRepository struct {
 }
 
 var (
-	_ port.ActivationNotificationReader = (*ActivationNotificationRepository)(nil)
-	_ port.ActivationNotificationWriter = (*ActivationNotificationRepository)(nil)
+	_ repository.ActivationNotificationReader = (*ActivationNotificationRepository)(nil)
+	_ repository.ActivationNotificationWriter = (*ActivationNotificationRepository)(nil)
 )
 
 func NewActivationNotificationRepository(queries store.Querier) *ActivationNotificationRepository {

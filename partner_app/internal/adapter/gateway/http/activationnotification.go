@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway"
 )
 
 const maximumResponseBytes = 4096
@@ -19,7 +19,7 @@ type ActivationNotificationClient struct {
 	client *http.Client
 }
 
-var _ port.ActivationNotificationSender = (*ActivationNotificationClient)(nil)
+var _ gateway.ActivationNotificationSender = (*ActivationNotificationClient)(nil)
 
 func NewActivationNotificationClient(url string, client *http.Client) *ActivationNotificationClient {
 	if client == nil {
@@ -38,7 +38,7 @@ type activationNotificationRequest struct {
 	FreeTrial      string `json:"free_trial"`
 }
 
-func (c *ActivationNotificationClient) Send(ctx context.Context, in port.ActivationNotificationDelivery) error {
+func (c *ActivationNotificationClient) Send(ctx context.Context, in gateway.ActivationNotificationDelivery) error {
 	body, err := json.Marshal(activationNotificationRequest{
 		NotificationID: in.Notification.ID.String(),
 		Event:          string(in.Notification.Event),

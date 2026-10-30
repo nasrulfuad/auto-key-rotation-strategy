@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/store"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 )
 
 type SubscriptionRepository struct {
@@ -14,8 +14,8 @@ type SubscriptionRepository struct {
 }
 
 var (
-	_ port.SubscriptionReader = (*SubscriptionRepository)(nil)
-	_ port.SubscriptionWriter = (*SubscriptionRepository)(nil)
+	_ repository.SubscriptionReader = (*SubscriptionRepository)(nil)
+	_ repository.SubscriptionWriter = (*SubscriptionRepository)(nil)
 )
 
 func NewSubscriptionRepository(queries store.Querier) *SubscriptionRepository {

@@ -4,25 +4,27 @@ import (
 	"context"
 	"time"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/jwt"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
 type Signer struct {
-	signingKeyReader port.SigningKeyReader
-	tokenIssuer      port.TokenIssuer
-	clock            port.Clock
-	uuidGenerator    port.UUIDGenerator
+	signingKeyReader repository.SigningKeyReader
+	tokenIssuer      jwt.TokenIssuer
+	clock            systemclock.Clock
+	uuidGenerator    systemclock.UUIDGenerator
 
 	issuer   string
 	tokenTTL time.Duration
 }
 
 func NewSigner(
-	signingKeyReader port.SigningKeyReader,
-	tokenIssuer port.TokenIssuer,
-	clock port.Clock,
-	uuidGenerator port.UUIDGenerator,
+	signingKeyReader repository.SigningKeyReader,
+	tokenIssuer jwt.TokenIssuer,
+	clock systemclock.Clock,
+	uuidGenerator systemclock.UUIDGenerator,
 	issuer string,
 	tokenTTL time.Duration,
 ) *Signer {

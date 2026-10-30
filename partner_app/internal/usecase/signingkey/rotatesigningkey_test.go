@@ -11,34 +11,37 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository/repositorymocks"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port/mocks"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging/loggingmocks"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/rsakey/rsakeymocks"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock/systemclockmocks"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/signingkey"
 )
 
 const rotationLockName = "ensure_signing_keys"
 
 type rotateFixture struct {
-	jobLock   *mocks.MockJobLock
-	reader    *mocks.MockSigningKeyReader
-	writer    *mocks.MockSigningKeyWriter
-	generator *mocks.MockKeyPairGenerator
-	clock     *mocks.MockClock
-	uuids     *mocks.MockUUIDGenerator
-	logger    *mocks.MockLogger
+	jobLock   *repositorymocks.MockJobLock
+	reader    *repositorymocks.MockSigningKeyReader
+	writer    *repositorymocks.MockSigningKeyWriter
+	generator *rsakeymocks.MockKeyPairGenerator
+	clock     *systemclockmocks.MockClock
+	uuids     *systemclockmocks.MockUUIDGenerator
+	logger    *loggingmocks.MockLogger
 	uc        *signingkey.RotateSigningKeyInteractor
 }
 
 func newRotateFixture(t *testing.T) rotateFixture {
 	f := rotateFixture{
-		jobLock:   mocks.NewMockJobLock(t),
-		reader:    mocks.NewMockSigningKeyReader(t),
-		writer:    mocks.NewMockSigningKeyWriter(t),
-		generator: mocks.NewMockKeyPairGenerator(t),
-		clock:     mocks.NewMockClock(t),
-		uuids:     mocks.NewMockUUIDGenerator(t),
-		logger:    mocks.NewMockLogger(t),
+		jobLock:   repositorymocks.NewMockJobLock(t),
+		reader:    repositorymocks.NewMockSigningKeyReader(t),
+		writer:    repositorymocks.NewMockSigningKeyWriter(t),
+		generator: rsakeymocks.NewMockKeyPairGenerator(t),
+		clock:     systemclockmocks.NewMockClock(t),
+		uuids:     systemclockmocks.NewMockUUIDGenerator(t),
+		logger:    loggingmocks.NewMockLogger(t),
 	}
 	f.uc = signingkey.NewRotateSigningKeyInteractor(f.jobLock, f.reader, f.writer, f.generator, f.clock, f.uuids, f.logger,
 		rotationLockName, schedule, domain.SigningAlgorithmRS256)
@@ -78,10 +81,10 @@ func TestRotateSigningKeyCreatesPendingKeyAndShortensCurrentKey(t *testing.T) {
 	f.generator.EXPECT().Generate(mock.Anything, domain.SigningAlgorithmRS256).Return(keyPair, nil)
 	f.uuids.EXPECT().NewUUID().Return(id)
 	nextKey := domain.SigningKey{ID: id, KeyID: "next", Algorithm: domain.SigningAlgorithmRS256, Window: nextWindow}
-	f.writer.EXPECT().Rotate(mock.Anything, port.SigningKeyRotate{
+	f.writer.EXPECT().Rotate(mock.Anything, repository.SigningKeyRotate{
 		CurrentKeyID:     current.ID,
 		CurrentKeyWindow: currentWindow,
-		NextKey:          port.SigningKeyCreate{ID: id, KeyPair: keyPair, Window: nextWindow},
+		NextKey:          repository.SigningKeyCreate{ID: id, KeyPair: keyPair, Window: nextWindow},
 	}).Return(nextKey, nil)
 	f.logger.EXPECT().Info(mock.Anything,
 		"signing key rotation requested; next signing key created as pending and the current key stops signing when it becomes active",

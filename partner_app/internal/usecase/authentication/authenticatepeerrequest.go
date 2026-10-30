@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/jwt"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
 type AuthenticatePeerRequestInput struct {
@@ -14,16 +15,16 @@ type AuthenticatePeerRequestInput struct {
 }
 
 type AuthenticatePeerRequestInteractor struct {
-	tokenVerifier port.TokenVerifier
-	clock         port.Clock
+	tokenVerifier jwt.TokenVerifier
+	clock         systemclock.Clock
 
 	peerIssuer string
 	leeway     time.Duration
 }
 
 func NewAuthenticatePeerRequestInteractor(
-	tokenVerifier port.TokenVerifier,
-	clock port.Clock,
+	tokenVerifier jwt.TokenVerifier,
+	clock systemclock.Clock,
 	peerIssuer string,
 	leeway time.Duration,
 ) *AuthenticatePeerRequestInteractor {

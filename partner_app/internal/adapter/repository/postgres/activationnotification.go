@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
 )
 
 type ActivationNotificationRepository struct {
@@ -17,8 +17,8 @@ type ActivationNotificationRepository struct {
 }
 
 var (
-	_ port.ActivationNotificationReader = (*ActivationNotificationRepository)(nil)
-	_ port.ActivationNotificationWriter = (*ActivationNotificationRepository)(nil)
+	_ repository.ActivationNotificationReader = (*ActivationNotificationRepository)(nil)
+	_ repository.ActivationNotificationWriter = (*ActivationNotificationRepository)(nil)
 )
 
 func NewActivationNotificationRepository(queries store.Querier) *ActivationNotificationRepository {
@@ -59,7 +59,7 @@ func (r *ActivationNotificationRepository) UpdateSent(ctx context.Context, id uu
 	return nil
 }
 
-func (r *ActivationNotificationRepository) UpdateAttemptFailed(ctx context.Context, in port.ActivationNotificationAttempt) error {
+func (r *ActivationNotificationRepository) UpdateAttemptFailed(ctx context.Context, in repository.ActivationNotificationAttempt) error {
 	if err := r.queries.UpdateActivationNotificationAttemptFailed(ctx, store.UpdateActivationNotificationAttemptFailedParams{
 		ID:            in.ID,
 		Status:        string(in.Result.Status),

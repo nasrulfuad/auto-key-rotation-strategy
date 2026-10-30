@@ -3,8 +3,11 @@ package subscription
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
 )
 
 type TerminateSubscriptionInput struct {
@@ -13,29 +16,29 @@ type TerminateSubscriptionInput struct {
 }
 
 type TerminateSubscriptionInteractor struct {
-	partnerEntitlementGateway port.PartnerEntitlementGateway
-	subscriptionWriter        port.SubscriptionWriter
+	partnerEntitlementGateway gateway.PartnerEntitlementGateway
+	subscriptionWriter        repository.SubscriptionWriter
 	tokenSigner               TokenSigner
-	clock                     port.Clock
-	uuidGenerator             port.UUIDGenerator
-	logger                    port.Logger
+	clock                     systemclock.Clock
+	uuidGenerator             systemclock.UUIDGenerator
+	logger                    logging.Logger
 
 	audience domain.TokenAudience
 	provider string
 }
 
 func NewTerminateSubscriptionInteractor(
-	partnerEntitlementGateway port.PartnerEntitlementGateway,
-	subscriptionWriter port.SubscriptionWriter,
+	partnerEntitlementGateway gateway.PartnerEntitlementGateway,
+	subscriptionWriter repository.SubscriptionWriter,
 	tokenSigner TokenSigner,
-	clock port.Clock,
-	uuidGenerator port.UUIDGenerator,
-	logger port.Logger,
+	clock systemclock.Clock,
+	uuidGenerator systemclock.UUIDGenerator,
+	logger logging.Logger,
 	audience domain.TokenAudience,
 	provider string,
 ) *TerminateSubscriptionInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &TerminateSubscriptionInteractor{
 		partnerEntitlementGateway: partnerEntitlementGateway,
@@ -57,7 +60,7 @@ func (i *TerminateSubscriptionInteractor) Execute(ctx context.Context, in Termin
 	if err != nil {
 		return domain.Subscription{}, err
 	}
-	entitlement, err := i.partnerEntitlementGateway.Terminate(ctx, port.PartnerEntitlementTerminate{
+	entitlement, err := i.partnerEntitlementGateway.Terminate(ctx, gateway.PartnerEntitlementTerminate{
 		Token:         signed.Value,
 		SubjectID:     in.SubjectID,
 		EntitlementID: in.EntitlementID,

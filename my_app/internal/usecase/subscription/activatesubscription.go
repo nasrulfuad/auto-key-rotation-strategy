@@ -3,8 +3,11 @@ package subscription
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
 )
 
 type ActivateSubscriptionInput struct {
@@ -15,29 +18,29 @@ type ActivateSubscriptionInput struct {
 }
 
 type ActivateSubscriptionInteractor struct {
-	partnerEntitlementGateway port.PartnerEntitlementGateway
-	subscriptionWriter        port.SubscriptionWriter
+	partnerEntitlementGateway gateway.PartnerEntitlementGateway
+	subscriptionWriter        repository.SubscriptionWriter
 	tokenSigner               TokenSigner
-	clock                     port.Clock
-	uuidGenerator             port.UUIDGenerator
-	logger                    port.Logger
+	clock                     systemclock.Clock
+	uuidGenerator             systemclock.UUIDGenerator
+	logger                    logging.Logger
 
 	audience domain.TokenAudience
 	provider string
 }
 
 func NewActivateSubscriptionInteractor(
-	partnerEntitlementGateway port.PartnerEntitlementGateway,
-	subscriptionWriter port.SubscriptionWriter,
+	partnerEntitlementGateway gateway.PartnerEntitlementGateway,
+	subscriptionWriter repository.SubscriptionWriter,
 	tokenSigner TokenSigner,
-	clock port.Clock,
-	uuidGenerator port.UUIDGenerator,
-	logger port.Logger,
+	clock systemclock.Clock,
+	uuidGenerator systemclock.UUIDGenerator,
+	logger logging.Logger,
 	audience domain.TokenAudience,
 	provider string,
 ) *ActivateSubscriptionInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &ActivateSubscriptionInteractor{
 		partnerEntitlementGateway: partnerEntitlementGateway,
@@ -60,7 +63,7 @@ func (i *ActivateSubscriptionInteractor) Execute(ctx context.Context, in Activat
 	if err != nil {
 		return domain.Subscription{}, err
 	}
-	entitlement, err := i.partnerEntitlementGateway.Upsert(ctx, port.PartnerEntitlementUpsert{Token: signed.Value, Change: change})
+	entitlement, err := i.partnerEntitlementGateway.Upsert(ctx, gateway.PartnerEntitlementUpsert{Token: signed.Value, Change: change})
 	if err != nil {
 		i.logger.Warn(ctx, "partner_app rejected the activation", "kid", signed.KeyID, "error", err)
 		return domain.Subscription{}, err

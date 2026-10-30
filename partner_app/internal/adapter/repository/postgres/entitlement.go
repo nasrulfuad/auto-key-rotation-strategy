@@ -6,9 +6,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
 )
 
 type EntitlementRepository struct {
@@ -17,15 +17,15 @@ type EntitlementRepository struct {
 }
 
 var (
-	_ port.EntitlementReader = (*EntitlementRepository)(nil)
-	_ port.EntitlementWriter = (*EntitlementRepository)(nil)
+	_ repository.EntitlementReader = (*EntitlementRepository)(nil)
+	_ repository.EntitlementWriter = (*EntitlementRepository)(nil)
 )
 
 func NewEntitlementRepository(db *sql.DB, queries store.Querier) *EntitlementRepository {
 	return &EntitlementRepository{db: db, queries: queries}
 }
 
-func (r *EntitlementRepository) Upsert(ctx context.Context, in port.EntitlementUpsert) (domain.Entitlement, error) {
+func (r *EntitlementRepository) Upsert(ctx context.Context, in repository.EntitlementUpsert) (domain.Entitlement, error) {
 	var entitlement domain.Entitlement
 	err := withTransaction(ctx, r.db, func(queries *store.Queries) error {
 		row, err := queries.UpsertEntitlement(ctx, store.UpsertEntitlementParams{
@@ -58,7 +58,7 @@ func (r *EntitlementRepository) Upsert(ctx context.Context, in port.EntitlementU
 	return entitlement, err
 }
 
-func (r *EntitlementRepository) Terminate(ctx context.Context, in port.EntitlementTerminate) (domain.Entitlement, error) {
+func (r *EntitlementRepository) Terminate(ctx context.Context, in repository.EntitlementTerminate) (domain.Entitlement, error) {
 	var entitlement domain.Entitlement
 	err := withTransaction(ctx, r.db, func(queries *store.Queries) error {
 		row, err := queries.UpdateEntitlementTermination(ctx, store.UpdateEntitlementTerminationParams{

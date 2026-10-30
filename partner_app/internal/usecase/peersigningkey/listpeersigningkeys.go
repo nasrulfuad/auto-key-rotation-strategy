@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/jwks"
 )
 
 type ListPeerSigningKeysOutput struct {
@@ -13,10 +13,10 @@ type ListPeerSigningKeysOutput struct {
 }
 
 type ListPeerSigningKeysInteractor struct {
-	peerKeySet port.PeerKeySet
+	peerKeySet jwks.PeerKeySet
 }
 
-func NewListPeerSigningKeysInteractor(peerKeySet port.PeerKeySet) *ListPeerSigningKeysInteractor {
+func NewListPeerSigningKeysInteractor(peerKeySet jwks.PeerKeySet) *ListPeerSigningKeysInteractor {
 	return &ListPeerSigningKeysInteractor{peerKeySet: peerKeySet}
 }
 

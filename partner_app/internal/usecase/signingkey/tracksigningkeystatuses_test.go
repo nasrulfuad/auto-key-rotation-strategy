@@ -8,23 +8,25 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository/repositorymocks"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port/mocks"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging/loggingmocks"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock/systemclockmocks"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/signingkey"
 )
 
 type trackFixture struct {
-	reader *mocks.MockSigningKeyReader
-	clock  *mocks.MockClock
-	logger *mocks.MockLogger
+	reader *repositorymocks.MockSigningKeyReader
+	clock  *systemclockmocks.MockClock
+	logger *loggingmocks.MockLogger
 	uc     *signingkey.TrackSigningKeyStatusesInteractor
 }
 
 func newTrackFixture(t *testing.T) trackFixture {
 	f := trackFixture{
-		reader: mocks.NewMockSigningKeyReader(t),
-		clock:  mocks.NewMockClock(t),
-		logger: mocks.NewMockLogger(t),
+		reader: repositorymocks.NewMockSigningKeyReader(t),
+		clock:  systemclockmocks.NewMockClock(t),
+		logger: loggingmocks.NewMockLogger(t),
 	}
 	f.uc = signingkey.NewTrackSigningKeyStatusesInteractor(f.reader, f.clock, f.logger)
 	return f

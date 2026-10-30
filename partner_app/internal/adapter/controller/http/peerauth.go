@@ -6,20 +6,20 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/authentication"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
 )
 
 const verifiedTokenKey = "verified_token"
 
 type PeerAuthMiddleware struct {
 	authenticatePeerRequest *authentication.AuthenticatePeerRequestInteractor
-	logger                  port.Logger
+	logger                  logging.Logger
 }
 
-func NewPeerAuthMiddleware(authenticatePeerRequest *authentication.AuthenticatePeerRequestInteractor, logger port.Logger) *PeerAuthMiddleware {
+func NewPeerAuthMiddleware(authenticatePeerRequest *authentication.AuthenticatePeerRequestInteractor, logger logging.Logger) *PeerAuthMiddleware {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &PeerAuthMiddleware{authenticatePeerRequest: authenticatePeerRequest, logger: logger}
 }

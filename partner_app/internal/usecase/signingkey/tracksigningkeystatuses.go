@@ -3,25 +3,27 @@ package signingkey
 import (
 	"context"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
 type TrackSigningKeyStatusesInteractor struct {
-	signingKeyReader port.SigningKeyReader
-	clock            port.Clock
-	logger           port.Logger
+	signingKeyReader repository.SigningKeyReader
+	clock            systemclock.Clock
+	logger           logging.Logger
 
 	observedStatuses map[string]domain.SigningKeyStatus
 }
 
 func NewTrackSigningKeyStatusesInteractor(
-	signingKeyReader port.SigningKeyReader,
-	clock port.Clock,
-	logger port.Logger,
+	signingKeyReader repository.SigningKeyReader,
+	clock systemclock.Clock,
+	logger logging.Logger,
 ) *TrackSigningKeyStatusesInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &TrackSigningKeyStatusesInteractor{signingKeyReader: signingKeyReader, clock: clock, logger: logger}
 }

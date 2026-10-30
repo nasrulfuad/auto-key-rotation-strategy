@@ -10,10 +10,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository/repositorymocks"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock/systemclockmocks"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/entitlement"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port/mocks"
 )
 
 var now = time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -23,14 +24,14 @@ func token(provider string) domain.VerifiedToken {
 }
 
 func TestUpsertEntitlementUsesTokenIssuedAtAsLastUpdated(t *testing.T) {
-	writer := mocks.NewMockEntitlementWriter(t)
-	clock := mocks.NewMockClock(t)
-	uuids := mocks.NewMockUUIDGenerator(t)
+	writer := repositorymocks.NewMockEntitlementWriter(t)
+	clock := systemclockmocks.NewMockClock(t)
+	uuids := systemclockmocks.NewMockUUIDGenerator(t)
 	rowID, notificationID := uuid.New(), uuid.New()
 	clock.EXPECT().Now().Return(now)
 	uuids.EXPECT().NewUUID().Return(rowID).Once()
 	uuids.EXPECT().NewUUID().Return(notificationID).Once()
-	writer.EXPECT().Upsert(mock.Anything, port.EntitlementUpsert{
+	writer.EXPECT().Upsert(mock.Anything, repository.EntitlementUpsert{
 		ID:                       rowID,
 		ActivationNotificationID: notificationID,
 		Change: domain.EntitlementChange{
@@ -47,16 +48,16 @@ func TestUpsertEntitlementUsesTokenIssuedAtAsLastUpdated(t *testing.T) {
 }
 
 func TestUpsertEntitlementRejectsForeignProvider(t *testing.T) {
-	writer := mocks.NewMockEntitlementWriter(t)
+	writer := repositorymocks.NewMockEntitlementWriter(t)
 
-	_, err := entitlement.NewUpsertEntitlementInteractor(writer, mocks.NewMockClock(t), mocks.NewMockUUIDGenerator(t), nil, "my_app").
+	_, err := entitlement.NewUpsertEntitlementInteractor(writer, systemclockmocks.NewMockClock(t), systemclockmocks.NewMockUUIDGenerator(t), nil, "my_app").
 		Execute(context.Background(), entitlement.UpsertEntitlementInput{Token: token("someone_else"), SubjectID: "SUB1", EntitlementID: "ENT1", Products: "p"})
 
 	assert.ErrorIs(t, err, domain.TokenClaimInvalid("provider_not_allowed"))
 }
 
 func TestGetEntitlementScopesLookupToTokenProvider(t *testing.T) {
-	reader := mocks.NewMockEntitlementReader(t)
+	reader := repositorymocks.NewMockEntitlementReader(t)
 	reader.EXPECT().FindBySubjectAndEntitlement(mock.Anything, "my_app", "SUB1", "ENT1").Return(domain.Entitlement{}, domain.ErrEntitlementNotFound)
 
 	_, err := entitlement.NewGetEntitlementInteractor(reader, "my_app").Execute(context.Background(),

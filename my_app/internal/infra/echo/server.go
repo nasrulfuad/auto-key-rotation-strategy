@@ -11,7 +11,6 @@ import (
 	controller "github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/controller/http"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/presenter"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 )
 
 const (
@@ -23,13 +22,13 @@ const (
 
 type Options struct {
 	RequestTimeout time.Duration
-	Logger         port.Logger
+	Logger         logging.Logger
 }
 
 func New(o Options, router *controller.Router, errorPresenter *presenter.ErrorPresenter) *echo.Echo {
 	logger := o.Logger
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	e := echo.New()
 	e.HideBanner = true
@@ -48,7 +47,7 @@ func New(o Options, router *controller.Router, errorPresenter *presenter.ErrorPr
 	return e
 }
 
-func logRequest(logger port.Logger) echo.MiddlewareFunc {
+func logRequest(logger logging.Logger) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ectx echo.Context) error {
 			startedAt := time.Now()

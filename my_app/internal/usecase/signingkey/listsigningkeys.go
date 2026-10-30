@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
 )
 
 type ListSigningKeysOutput struct {
@@ -14,11 +15,11 @@ type ListSigningKeysOutput struct {
 }
 
 type ListSigningKeysInteractor struct {
-	signingKeyReader port.SigningKeyReader
-	clock            port.Clock
+	signingKeyReader repository.SigningKeyReader
+	clock            systemclock.Clock
 }
 
-func NewListSigningKeysInteractor(signingKeyReader port.SigningKeyReader, clock port.Clock) *ListSigningKeysInteractor {
+func NewListSigningKeysInteractor(signingKeyReader repository.SigningKeyReader, clock systemclock.Clock) *ListSigningKeysInteractor {
 	return &ListSigningKeysInteractor{signingKeyReader: signingKeyReader, clock: clock}
 }
 

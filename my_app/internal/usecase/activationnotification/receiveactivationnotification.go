@@ -5,8 +5,10 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
 )
 
 type ReceiveActivationNotificationInput struct {
@@ -21,20 +23,20 @@ type ReceiveActivationNotificationInput struct {
 }
 
 type ReceiveActivationNotificationInteractor struct {
-	activationNotificationWriter port.ActivationNotificationWriter
-	clock                        port.Clock
-	uuidGenerator                port.UUIDGenerator
-	logger                       port.Logger
+	activationNotificationWriter repository.ActivationNotificationWriter
+	clock                        systemclock.Clock
+	uuidGenerator                systemclock.UUIDGenerator
+	logger                       logging.Logger
 }
 
 func NewReceiveActivationNotificationInteractor(
-	activationNotificationWriter port.ActivationNotificationWriter,
-	clock port.Clock,
-	uuidGenerator port.UUIDGenerator,
-	logger port.Logger,
+	activationNotificationWriter repository.ActivationNotificationWriter,
+	clock systemclock.Clock,
+	uuidGenerator systemclock.UUIDGenerator,
+	logger logging.Logger,
 ) *ReceiveActivationNotificationInteractor {
 	if logger == nil {
-		logger = port.NopLogger{}
+		logger = logging.NopLogger{}
 	}
 	return &ReceiveActivationNotificationInteractor{
 		activationNotificationWriter: activationNotificationWriter,

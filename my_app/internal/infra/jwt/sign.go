@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	gojwt "github.com/golang-jwt/jwt/v5"
+
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
 )
 

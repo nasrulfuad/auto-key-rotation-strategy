@@ -10,10 +10,14 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway/gatewaymocks"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository/repositorymocks"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging/loggingmocks"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock/systemclockmocks"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/activationnotification"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port/mocks"
 )
 
 var now = time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -36,19 +40,19 @@ func deliveryFields(notification domain.ActivationNotification) []any {
 }
 
 func TestDeliverActivationNotificationsMarksSentAndSchedulesRetry(t *testing.T) {
-	reader := mocks.NewMockActivationNotificationReader(t)
-	writer := mocks.NewMockActivationNotificationWriter(t)
-	sender := mocks.NewMockActivationNotificationSender(t)
-	clock := mocks.NewMockClock(t)
-	logger := mocks.NewMockLogger(t)
+	reader := repositorymocks.NewMockActivationNotificationReader(t)
+	writer := repositorymocks.NewMockActivationNotificationWriter(t)
+	sender := gatewaymocks.NewMockActivationNotificationSender(t)
+	clock := systemclockmocks.NewMockClock(t)
+	logger := loggingmocks.NewMockLogger(t)
 	delivered := domain.ActivationNotification{ID: uuid.New(), SubjectID: "SUB1", Provider: "my_app"}
 	failing := domain.ActivationNotification{ID: uuid.New(), SubjectID: "SUB2", Provider: "my_app", Attempts: 1}
 	clock.EXPECT().Now().Return(now)
 	reader.EXPECT().ListAllDue(mock.Anything, now, 10).Return([]domain.ActivationNotification{delivered, failing}, nil)
-	sender.EXPECT().Send(mock.Anything, port.ActivationNotificationDelivery{Token: "token-for-SUB1", Notification: delivered}).Return(nil)
-	sender.EXPECT().Send(mock.Anything, port.ActivationNotificationDelivery{Token: "token-for-SUB2", Notification: failing}).Return(errors.New("status 401"))
+	sender.EXPECT().Send(mock.Anything, gateway.ActivationNotificationDelivery{Token: "token-for-SUB1", Notification: delivered}).Return(nil)
+	sender.EXPECT().Send(mock.Anything, gateway.ActivationNotificationDelivery{Token: "token-for-SUB2", Notification: failing}).Return(errors.New("status 401"))
 	writer.EXPECT().UpdateSent(mock.Anything, delivered.ID, now).Return(nil)
-	writer.EXPECT().UpdateAttemptFailed(mock.Anything, port.ActivationNotificationAttempt{
+	writer.EXPECT().UpdateAttemptFailed(mock.Anything, repository.ActivationNotificationAttempt{
 		ID:        failing.ID,
 		Result:    domain.ActivationNotificationAttemptResult{Attempts: 2, Status: domain.ActivationNotificationStatusPending, NextAttemptAt: now.Add(10 * time.Second)},
 		LastError: "status 401",
@@ -68,17 +72,17 @@ func TestDeliverActivationNotificationsMarksSentAndSchedulesRetry(t *testing.T) 
 }
 
 func TestDeliverActivationNotificationsGivesUpAfterMaximumAttempts(t *testing.T) {
-	reader := mocks.NewMockActivationNotificationReader(t)
-	writer := mocks.NewMockActivationNotificationWriter(t)
-	sender := mocks.NewMockActivationNotificationSender(t)
-	clock := mocks.NewMockClock(t)
-	logger := mocks.NewMockLogger(t)
+	reader := repositorymocks.NewMockActivationNotificationReader(t)
+	writer := repositorymocks.NewMockActivationNotificationWriter(t)
+	sender := gatewaymocks.NewMockActivationNotificationSender(t)
+	clock := systemclockmocks.NewMockClock(t)
+	logger := loggingmocks.NewMockLogger(t)
 	exhausted := domain.ActivationNotification{ID: uuid.New(), SubjectID: "SUB3", Provider: "my_app", Attempts: 4}
 	sendErr := errors.New("status 500")
 	clock.EXPECT().Now().Return(now)
 	reader.EXPECT().ListAllDue(mock.Anything, now, 10).Return([]domain.ActivationNotification{exhausted}, nil)
-	sender.EXPECT().Send(mock.Anything, port.ActivationNotificationDelivery{Token: "token-for-SUB3", Notification: exhausted}).Return(sendErr)
-	writer.EXPECT().UpdateAttemptFailed(mock.Anything, port.ActivationNotificationAttempt{
+	sender.EXPECT().Send(mock.Anything, gateway.ActivationNotificationDelivery{Token: "token-for-SUB3", Notification: exhausted}).Return(sendErr)
+	writer.EXPECT().UpdateAttemptFailed(mock.Anything, repository.ActivationNotificationAttempt{
 		ID:        exhausted.ID,
 		Result:    domain.ActivationNotificationAttemptResult{Attempts: 5, Status: domain.ActivationNotificationStatusFailed, NextAttemptAt: now},
 		LastError: "status 500",

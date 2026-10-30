@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port"
 )
 
 const maximumResponseBytes = 1 << 20
@@ -22,7 +22,7 @@ type PartnerEntitlementClient struct {
 	client  *http.Client
 }
 
-var _ port.PartnerEntitlementGateway = (*PartnerEntitlementClient)(nil)
+var _ gateway.PartnerEntitlementGateway = (*PartnerEntitlementClient)(nil)
 
 func NewPartnerEntitlementClient(baseURL string, client *http.Client) *PartnerEntitlementClient {
 	if client == nil {
@@ -64,7 +64,7 @@ type errorResponse struct {
 	} `json:"error"`
 }
 
-func (c *PartnerEntitlementClient) Upsert(ctx context.Context, in port.PartnerEntitlementUpsert) (domain.PartnerEntitlement, error) {
+func (c *PartnerEntitlementClient) Upsert(ctx context.Context, in gateway.PartnerEntitlementUpsert) (domain.PartnerEntitlement, error) {
 	request := upsertEntitlementRequest{Products: in.Change.Products}
 	if in.Change.FreeTrial != "" {
 		request.Offer = &offerRequest{FreeTrial: string(in.Change.FreeTrial)}
@@ -76,7 +76,7 @@ func (c *PartnerEntitlementClient) Upsert(ctx context.Context, in port.PartnerEn
 	return toPartnerEntitlement(response), nil
 }
 
-func (c *PartnerEntitlementClient) Terminate(ctx context.Context, in port.PartnerEntitlementTerminate) (domain.PartnerEntitlement, error) {
+func (c *PartnerEntitlementClient) Terminate(ctx context.Context, in gateway.PartnerEntitlementTerminate) (domain.PartnerEntitlement, error) {
 	var response entitlementResponse
 	if err := c.do(ctx, http.MethodPost, entitlementPath(in.SubjectID, in.EntitlementID)+"/terminate", in.Token, nil, &response); err != nil {
 		return domain.PartnerEntitlement{}, err

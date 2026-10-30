@@ -6,16 +6,16 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/presenter"
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
 )
 
 type HealthController struct {
-	databaseProbe port.DatabaseProbe
+	databaseProbe repository.DatabaseProbe
 	presenter     *presenter.HealthPresenter
 }
 
-func NewHealthController(databaseProbe port.DatabaseProbe, healthPresenter *presenter.HealthPresenter) *HealthController {
+func NewHealthController(databaseProbe repository.DatabaseProbe, healthPresenter *presenter.HealthPresenter) *HealthController {
 	return &HealthController{databaseProbe: databaseProbe, presenter: healthPresenter}
 }
 

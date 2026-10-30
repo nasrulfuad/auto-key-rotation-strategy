@@ -4,16 +4,16 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/port"
 )
 
 type JobLockRepository struct {
 	db *sql.DB
 }
 
-var _ port.JobLock = (*JobLockRepository)(nil)
+var _ repository.JobLock = (*JobLockRepository)(nil)
 
 func NewJobLockRepository(db *sql.DB) *JobLockRepository {
 	return &JobLockRepository{db: db}
@@ -39,7 +39,7 @@ type DatabaseProbeRepository struct {
 	queries store.Querier
 }
 
-var _ port.DatabaseProbe = (*DatabaseProbeRepository)(nil)
+var _ repository.DatabaseProbe = (*DatabaseProbeRepository)(nil)
 
 func NewDatabaseProbeRepository(queries store.Querier) *DatabaseProbeRepository {
 	return &DatabaseProbeRepository{queries: queries}
