@@ -1,0 +1,33 @@
+package http
+
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/presenter"
+	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/peersigningkey"
+)
+
+type PeerSigningKeyController struct {
+	listPeerSigningKeys *peersigningkey.ListPeerSigningKeysInteractor
+	presenter           *presenter.PeerSigningKeyPresenter
+}
+
+func NewPeerSigningKeyController(
+	listPeerSigningKeys *peersigningkey.ListPeerSigningKeysInteractor,
+	peerSigningKeyPresenter *presenter.PeerSigningKeyPresenter,
+) *PeerSigningKeyController {
+	return &PeerSigningKeyController{listPeerSigningKeys: listPeerSigningKeys, presenter: peerSigningKeyPresenter}
+}
+
+// @Summary      Cached JWKS of partner_app (debug)
+// @Description  Keys this app currently trusts to verify partner_app activation notification tokens, plus the result of the last fetch.
+// @Tags         signing-key
+// @Produce      json
+// @Success      200  {object}  apidoc.PeerSigningKeyList
+// @Router       /peer-signing-keys [get]
+func (c *PeerSigningKeyController) ListPeerSigningKeys(ectx echo.Context) error {
+	out := c.listPeerSigningKeys.Execute(ectx.Request().Context())
+	return ectx.JSON(http.StatusOK, c.presenter.ListPeerSigningKeys(out))
+}

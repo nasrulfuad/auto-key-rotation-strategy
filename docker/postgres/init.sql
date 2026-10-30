@@ -1,0 +1,2 @@
+CREATE DATABASE my_app;
+CREATE DATABASE partner_app;

@@ -1,0 +1,74 @@
+name: jwks-key-rotation
+
+services:
+  postgres:
+    image: docker.io/library/postgres:17-alpine
+    environment:
+      POSTGRES_USER: jwks
+      POSTGRES_PASSWORD: jwks
+      POSTGRES_DB: postgres
+    ports:
+      - "55432:5432"
+    volumes:
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jwks"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  my_app:
+    build: ./my_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      APP_PORT: "8081"
+      DATABASE_URL: postgres://jwks:jwks@postgres:5432/my_app
+      KEY_ENCRYPTION_KEY: ${MY_APP_KEY_ENCRYPTION_KEY}
+      TOKEN_ISSUER: qa.my-app.local
+      PROVIDER: my_app
+      PEER_ISSUER: qa.partner-app.local
+      PEER_JWKS_URL: http://partner_app:8082/.well-known/jwks.json
+      PARTNER_BASE_URL: http://partner_app:8082
+      KEY_PENDING_DURATION: ${KEY_PENDING_DURATION:-5m}
+      KEY_ACTIVE_DURATION: ${KEY_ACTIVE_DURATION:-20m}
+      KEY_INACTIVE_DURATION: ${KEY_INACTIVE_DURATION:-10m}
+      KEY_ROTATION_CHECK_INTERVAL: ${KEY_ROTATION_CHECK_INTERVAL:-15s}
+      TOKEN_TTL: ${TOKEN_TTL:-5m}
+      PEER_JWKS_POLL_INTERVAL: ${PEER_JWKS_POLL_INTERVAL:-1m}
+      PEER_JWKS_REFRESH_ON_UNKNOWN_KEY_ID: ${PEER_JWKS_REFRESH_ON_UNKNOWN_KEY_ID:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      ENABLE_API_DOCS: ${ENABLE_API_DOCS:-true}
+
+  partner_app:
+    build: ./partner_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+    environment:
+      APP_PORT: "8082"
+      DATABASE_URL: postgres://jwks:jwks@postgres:5432/partner_app
+      KEY_ENCRYPTION_KEY: ${PARTNER_APP_KEY_ENCRYPTION_KEY}
+      TOKEN_ISSUER: qa.partner-app.local
+      PEER_ISSUER: qa.my-app.local
+      PEER_PROVIDER: my_app
+      PEER_JWKS_URL: http://my_app:8081/.well-known/jwks.json
+      ACTIVATION_NOTIFICATION_URL: http://my_app:8081/activation-notifications
+      KEY_PENDING_DURATION: ${PARTNER_APP_KEY_PENDING_DURATION:-${KEY_PENDING_DURATION:-5m}}
+      KEY_ACTIVE_DURATION: ${PARTNER_APP_KEY_ACTIVE_DURATION:-${KEY_ACTIVE_DURATION:-20m}}
+      KEY_INACTIVE_DURATION: ${PARTNER_APP_KEY_INACTIVE_DURATION:-${KEY_INACTIVE_DURATION:-10m}}
+      KEY_ROTATION_CHECK_INTERVAL: ${KEY_ROTATION_CHECK_INTERVAL:-15s}
+      TOKEN_TTL: ${TOKEN_TTL:-5m}
+      PEER_JWKS_POLL_INTERVAL: ${PEER_JWKS_POLL_INTERVAL:-1m}
+      PEER_JWKS_REFRESH_ON_UNKNOWN_KEY_ID: ${PEER_JWKS_REFRESH_ON_UNKNOWN_KEY_ID:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      ENABLE_API_DOCS: ${ENABLE_API_DOCS:-true}
+
+volumes:
+  postgres-data:

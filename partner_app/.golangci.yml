@@ -1,0 +1,74 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - errorlint
+    - bodyclose
+    - nolintlint
+    - depguard
+
+  settings:
+    errcheck:
+      check-type-assertions: true
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+
+    depguard:
+      rules:
+        domain:
+          list-mode: strict
+          files:
+            - "**/internal/domain/*.go"
+          allow:
+            - $gostd
+            - github.com/google/uuid
+            - github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain
+            - github.com/stretchr/testify
+          deny:
+            - pkg: net/http
+              desc: transport is the adapter ring's concern
+            - pkg: database/sql
+              desc: persistence is the adapter ring's concern
+            - pkg: crypto/rsa
+              desc: the domain stores key material as bytes; infra/rsakey owns the RSA types
+
+        usecase:
+          files:
+            - "**/internal/usecase/**/*.go"
+          deny:
+            - pkg: github.com/labstack/echo/v4
+              desc: transport is the adapter ring's concern
+            - pkg: database/sql
+              desc: persistence is the adapter ring's concern
+            - pkg: github.com/golang-jwt/jwt/v5
+              desc: token encoding is infra/jwt's concern
+            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store
+              desc: sqlc types may only be seen by adapter/repository/postgres
+            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter
+              desc: an inner ring must not depend on an outer ring
+            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra
+              desc: an inner ring must not depend on an outer ring
+
+        store-is-private:
+          files:
+            - "!**/internal/store/*.go"
+            - "!**/internal/adapter/repository/postgres/*.go"
+            - "!**/internal/di/*.go"
+          deny:
+            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store
+              desc: only adapter/repository/postgres may see sqlc types
+
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters: [errcheck]
+
+formatters:
+  enable:
+    - gofmt
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

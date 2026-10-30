@@ -1,0 +1,7 @@
+*.pdf
+pdf_summary.md
+plan.md
+.env
+*.log
+coverage.out
+tmp/

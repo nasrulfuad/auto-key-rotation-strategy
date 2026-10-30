@@ -1,0 +1,812 @@
+{
+    "components": {
+        "schemas": {
+            "apidoc.ActivateSubscriptionRequest": {
+                "properties": {
+                    "entitlement_id": {
+                        "example": "ENT001",
+                        "type": "string"
+                    },
+                    "offer": {
+                        "$ref": "#/components/schemas/apidoc.Offer"
+                    },
+                    "products": {
+                        "example": "com.partner.product1",
+                        "type": "string"
+                    },
+                    "subject_id": {
+                        "example": "SUB001",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.ActivationNotification": {
+                "properties": {
+                    "entitlement_id": {
+                        "example": "ENT001",
+                        "type": "string"
+                    },
+                    "event": {
+                        "example": "entitlement_upserted",
+                        "type": "string"
+                    },
+                    "free_trial": {
+                        "example": "NONE",
+                        "type": "string"
+                    },
+                    "issuer": {
+                        "example": "qa.partner-app.local",
+                        "type": "string"
+                    },
+                    "key_id": {
+                        "example": "zonIzOJt60M94v1hq7rH2ddIYuqjTigBsXwROMiPV7M",
+                        "type": "string"
+                    },
+                    "notification_id": {
+                        "example": "6a202257-04fd-4b17-93ce-370b9b99ef12",
+                        "type": "string"
+                    },
+                    "products": {
+                        "example": "com.partner.product1",
+                        "type": "string"
+                    },
+                    "provider": {
+                        "example": "my_app",
+                        "type": "string"
+                    },
+                    "received_at": {
+                        "example": "2026-01-01T00:25:05Z",
+                        "type": "string"
+                    },
+                    "subject_id": {
+                        "example": "SUB001",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.ActivationNotificationList": {
+                "properties": {
+                    "data": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.ActivationNotification"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.ErrorDetail": {
+                "properties": {
+                    "code": {
+                        "example": "TOKEN_SIGNING_KEY_NOT_FOUND",
+                        "type": "string"
+                    },
+                    "field": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "example": "authentication required",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.ErrorEnvelope": {
+                "properties": {
+                    "error": {
+                        "$ref": "#/components/schemas/apidoc.ErrorDetail"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.Health": {
+                "properties": {
+                    "status": {
+                        "example": "ok",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.JSONWebKey": {
+                "properties": {
+                    "alg": {
+                        "enum": [
+                            "RS256",
+                            "RS384",
+                            "RS512"
+                        ],
+                        "example": "RS256",
+                        "type": "string"
+                    },
+                    "e": {
+                        "example": "AQAB",
+                        "type": "string"
+                    },
+                    "kid": {
+                        "example": "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs",
+                        "type": "string"
+                    },
+                    "kty": {
+                        "example": "RSA",
+                        "type": "string"
+                    },
+                    "n": {
+                        "example": "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
+                        "type": "string"
+                    },
+                    "use": {
+                        "example": "sig",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.JSONWebKeySet": {
+                "properties": {
+                    "keys": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.JSONWebKey"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.Offer": {
+                "properties": {
+                    "free_trial": {
+                        "enum": [
+                            "ACTIVE",
+                            "INACTIVE",
+                            "NONE",
+                            "UNKNOWN"
+                        ],
+                        "example": "NONE",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.PeerSigningKey": {
+                "properties": {
+                    "algorithm": {
+                        "example": "RS256",
+                        "type": "string"
+                    },
+                    "fetched_at": {
+                        "example": "2026-01-01T00:15:10Z",
+                        "type": "string"
+                    },
+                    "key_id": {
+                        "example": "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.PeerSigningKeyList": {
+                "properties": {
+                    "data": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.PeerSigningKey"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "last_attempt_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "last_error": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "last_fetched_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "url": {
+                        "example": "http://partner_app:8082/.well-known/jwks.json",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.ReceiveActivationNotificationRequest": {
+                "properties": {
+                    "entitlement_id": {
+                        "example": "ENT001",
+                        "type": "string"
+                    },
+                    "event": {
+                        "enum": [
+                            "entitlement_upserted",
+                            "entitlement_terminated"
+                        ],
+                        "example": "entitlement_upserted",
+                        "type": "string"
+                    },
+                    "free_trial": {
+                        "example": "NONE",
+                        "type": "string"
+                    },
+                    "notification_id": {
+                        "example": "6a202257-04fd-4b17-93ce-370b9b99ef12",
+                        "type": "string"
+                    },
+                    "products": {
+                        "example": "com.partner.product1",
+                        "type": "string"
+                    },
+                    "provider": {
+                        "example": "my_app",
+                        "type": "string"
+                    },
+                    "subject_id": {
+                        "example": "SUB001",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.SigningKey": {
+                "properties": {
+                    "active_from": {
+                        "example": "2026-01-01T00:20:00Z",
+                        "type": "string"
+                    },
+                    "active_until": {
+                        "example": "2026-01-01T00:40:00Z",
+                        "type": "string"
+                    },
+                    "algorithm": {
+                        "example": "RS256",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "example": "2026-01-01T00:15:00Z",
+                        "type": "string"
+                    },
+                    "delete_after": {
+                        "example": "2026-01-01T00:50:00Z",
+                        "type": "string"
+                    },
+                    "introduced_at": {
+                        "example": "2026-01-01T00:15:00Z",
+                        "type": "string"
+                    },
+                    "is_published": {
+                        "example": true,
+                        "type": "boolean"
+                    },
+                    "key_id": {
+                        "example": "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs",
+                        "type": "string"
+                    },
+                    "status": {
+                        "enum": [
+                            "pending",
+                            "active",
+                            "inactive",
+                            "expired"
+                        ],
+                        "example": "active",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.SigningKeyList": {
+                "properties": {
+                    "data": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.SigningKey"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "now": {
+                        "example": "2026-01-01T00:25:00Z",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.Subscription": {
+                "properties": {
+                    "activated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "created_at": {
+                        "example": "2026-01-01T00:25:00Z",
+                        "type": "string"
+                    },
+                    "entitlement_id": {
+                        "example": "ENT001",
+                        "type": "string"
+                    },
+                    "free_trial": {
+                        "enum": [
+                            "ACTIVE",
+                            "INACTIVE",
+                            "NONE",
+                            "UNKNOWN"
+                        ],
+                        "example": "NONE",
+                        "type": "string"
+                    },
+                    "products": {
+                        "example": "com.partner.product1",
+                        "type": "string"
+                    },
+                    "signed_with_key_id": {
+                        "example": "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs",
+                        "type": "string"
+                    },
+                    "status": {
+                        "enum": [
+                            "ACTIVE",
+                            "TERMINATED"
+                        ],
+                        "example": "ACTIVE",
+                        "type": "string"
+                    },
+                    "subject_id": {
+                        "example": "SUB001",
+                        "type": "string"
+                    },
+                    "terminated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updated_at": {
+                        "example": "2026-01-01T00:25:00Z",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.SubscriptionList": {
+                "properties": {
+                    "data": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.Subscription"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.TerminateSubscriptionRequest": {
+                "properties": {
+                    "entitlement_id": {
+                        "example": "ENT001",
+                        "type": "string"
+                    },
+                    "subject_id": {
+                        "example": "SUB001",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "BearerAuth": {
+                "description": "\"Bearer <JWT signed by partner_app>\". The token must carry kid, iss = PEER_ISSUER and aud = ACTIVATION_NOTIFICATION_AUDIENCE.",
+                "in": "header",
+                "name": "Authorization",
+                "type": "apiKey"
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "",
+        "url": ""
+    },
+    "info": {
+        "description": "Partner side of the JWKS key rotation simulation: demo endpoints that call partner_app with JWTs signed by the active key, the activation notification webhook, its own rotating JWKS, and debug views of both key sets. Every failure uses one error envelope; see apidoc.ErrorEnvelope.",
+        "title": "my_app API",
+        "version": "1.0"
+    },
+    "openapi": "3.1.0",
+    "paths": {
+        "/.well-known/jwks.json": {
+            "get": {
+                "description": "Public keys of every signing key that is pending, active or inactive. partner_app polls this to verify the bearer tokens of entitlement calls. Cache-Control max-age follows PEER_JWKS_POLL_INTERVAL.",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.JSONWebKeySet"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "JSON Web Key Set of my_app",
+                "tags": [
+                    "signing-key"
+                ]
+            }
+        },
+        "/activation-notifications": {
+            "get": {
+                "description": "Newest first, at most 100. key_id is the partner_app kid that signed each webhook.",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ActivationNotificationList"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Latest received activation notifications (debug)",
+                "tags": [
+                    "activation-notification"
+                ]
+            },
+            "post": {
+                "description": "Requires a partner_app JWT with aud = ACTIVATION_NOTIFICATION_AUDIENCE; its sub and provider must match subject_id and provider in the body. A repeated notification_id is acknowledged without storing it twice.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/apidoc.ReceiveActivationNotificationRequest"
+                            }
+                        }
+                    },
+                    "description": "notification",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "VALIDATION_FAILED, SUBJECT_ID_INVALID, ENTITLEMENT_ID_INVALID"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "TOKEN_INVALID, TOKEN_ISSUER_UNKNOWN, TOKEN_SIGNING_KEY_NOT_FOUND, TOKEN_CLAIM_INVALID"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Activation notification webhook (called by partner_app)",
+                "tags": [
+                    "activation-notification"
+                ]
+            }
+        },
+        "/activations": {
+            "post": {
+                "description": "Signs a JWT with the currently active my_app key (aud = ENTITLEMENT_SET_AUDIENCE, provider = PROVIDER), calls PUT /subjects/{subject_id}/entitlements/{entitlement_id} on partner_app, then stores the result locally. signed_with_key_id shows which kid signed the call, so a rotation is visible from here. Activating a terminated subscription reactivates it.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/apidoc.ActivateSubscriptionRequest"
+                            }
+                        }
+                    },
+                    "description": "activation",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Subscription"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "VALIDATION_FAILED, SUBJECT_ID_INVALID, ENTITLEMENT_ID_INVALID"
+                    },
+                    "502": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "PARTNER_REQUEST_REJECTED (message carries partner_app status and code), PARTNER_UNAVAILABLE"
+                    },
+                    "503": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "SIGNING_KEY_NOT_FOUND"
+                    }
+                },
+                "summary": "Activate a subscription at partner_app",
+                "tags": [
+                    "subscription"
+                ]
+            }
+        },
+        "/health": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Health"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Liveness probe",
+                "tags": [
+                    "health"
+                ]
+            }
+        },
+        "/health/db": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Health"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "503": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "DATABASE_UNREACHABLE"
+                    }
+                },
+                "summary": "Readiness probe (database round-trip)",
+                "tags": [
+                    "health"
+                ]
+            }
+        },
+        "/peer-signing-keys": {
+            "get": {
+                "description": "Keys this app currently trusts to verify partner_app activation notification tokens, plus the result of the last fetch.",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.PeerSigningKeyList"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Cached JWKS of partner_app (debug)",
+                "tags": [
+                    "signing-key"
+                ]
+            }
+        },
+        "/signing-keys": {
+            "get": {
+                "description": "Status is derived from now: pending (published, not signing), active (the only signer), inactive (published, tokens still valid), expired (about to be deleted). Never exposes private key material.",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.SigningKeyList"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Lifecycle of every signing key (debug)",
+                "tags": [
+                    "signing-key"
+                ]
+            }
+        },
+        "/subscriptions": {
+            "get": {
+                "description": "Newest first, at most 100. signed_with_key_id is the my_app kid that signed the last call to partner_app.",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.SubscriptionList"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Latest local subscriptions (debug)",
+                "tags": [
+                    "subscription"
+                ]
+            }
+        },
+        "/terminations": {
+            "post": {
+                "description": "Signs a JWT with aud = ENTITLEMENT_SET_AUDIENCE, calls POST /subjects/{subject_id}/entitlements/{entitlement_id}/terminate on partner_app, then stores the result locally.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/apidoc.TerminateSubscriptionRequest"
+                            }
+                        }
+                    },
+                    "description": "termination",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Subscription"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "SUBJECT_ID_INVALID, ENTITLEMENT_ID_INVALID"
+                    },
+                    "502": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "PARTNER_REQUEST_REJECTED (404 ENTITLEMENT_NOT_FOUND when it was never activated), PARTNER_UNAVAILABLE"
+                    },
+                    "503": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "SIGNING_KEY_NOT_FOUND"
+                    }
+                },
+                "summary": "Terminate a subscription at partner_app",
+                "tags": [
+                    "subscription"
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+template: testify
+dir: '{{.InterfaceDir}}/mocks'
+pkgname: mocks
+structname: 'Mock{{.InterfaceName}}'
+filename: '{{.InterfaceName | snakecase}}.go'
+force-file-write: true
+formatter: goimports
+log-level: warn
+packages:
+  github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/port:
+    config:
+      all: true

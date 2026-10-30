@@ -1,0 +1,6 @@
+go 1.26.0
+
+use (
+	./my_app
+	./partner_app
+)

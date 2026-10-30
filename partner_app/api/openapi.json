@@ -1,0 +1,790 @@
+{
+    "components": {
+        "schemas": {
+            "apidoc.Entitlement": {
+                "properties": {
+                    "created_at": {
+                        "example": "2026-01-01T00:25:00Z",
+                        "type": "string"
+                    },
+                    "entitlement_id": {
+                        "example": "ENT001",
+                        "type": "string"
+                    },
+                    "last_updated_at": {
+                        "example": "2026-01-01T00:25:00Z",
+                        "type": "string"
+                    },
+                    "offer": {
+                        "$ref": "#/components/schemas/apidoc.Offer"
+                    },
+                    "products": {
+                        "example": "com.partner.product1",
+                        "type": "string"
+                    },
+                    "provider": {
+                        "example": "my_app",
+                        "type": "string"
+                    },
+                    "status": {
+                        "enum": [
+                            "ACTIVE",
+                            "TERMINATED"
+                        ],
+                        "example": "ACTIVE",
+                        "type": "string"
+                    },
+                    "subject_id": {
+                        "example": "SUB001",
+                        "type": "string"
+                    },
+                    "terminated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updated_at": {
+                        "example": "2026-01-01T00:25:00Z",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.EntitlementList": {
+                "properties": {
+                    "data": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.Entitlement"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.ErrorDetail": {
+                "properties": {
+                    "code": {
+                        "example": "TOKEN_SIGNING_KEY_NOT_FOUND",
+                        "type": "string"
+                    },
+                    "field": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "message": {
+                        "example": "authentication required",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.ErrorEnvelope": {
+                "properties": {
+                    "error": {
+                        "$ref": "#/components/schemas/apidoc.ErrorDetail"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.Health": {
+                "properties": {
+                    "status": {
+                        "example": "ok",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.JSONWebKey": {
+                "properties": {
+                    "alg": {
+                        "enum": [
+                            "RS256",
+                            "RS384",
+                            "RS512"
+                        ],
+                        "example": "RS256",
+                        "type": "string"
+                    },
+                    "e": {
+                        "example": "AQAB",
+                        "type": "string"
+                    },
+                    "kid": {
+                        "example": "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs",
+                        "type": "string"
+                    },
+                    "kty": {
+                        "example": "RSA",
+                        "type": "string"
+                    },
+                    "n": {
+                        "example": "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
+                        "type": "string"
+                    },
+                    "use": {
+                        "example": "sig",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.JSONWebKeySet": {
+                "properties": {
+                    "keys": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.JSONWebKey"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.Offer": {
+                "properties": {
+                    "free_trial": {
+                        "enum": [
+                            "ACTIVE",
+                            "INACTIVE",
+                            "NONE",
+                            "UNKNOWN"
+                        ],
+                        "example": "NONE",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.OfferRequest": {
+                "properties": {
+                    "free_trial": {
+                        "enum": [
+                            "ACTIVE",
+                            "INACTIVE",
+                            "NONE",
+                            "UNKNOWN"
+                        ],
+                        "example": "NONE",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.PeerSigningKey": {
+                "properties": {
+                    "algorithm": {
+                        "example": "RS256",
+                        "type": "string"
+                    },
+                    "fetched_at": {
+                        "example": "2026-01-01T00:15:10Z",
+                        "type": "string"
+                    },
+                    "key_id": {
+                        "example": "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.PeerSigningKeyList": {
+                "properties": {
+                    "data": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.PeerSigningKey"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "last_attempt_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "last_error": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "last_fetched_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "url": {
+                        "example": "http://my_app:8081/.well-known/jwks.json",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.SigningKey": {
+                "properties": {
+                    "active_from": {
+                        "example": "2026-01-01T00:20:00Z",
+                        "type": "string"
+                    },
+                    "active_until": {
+                        "example": "2026-01-01T00:40:00Z",
+                        "type": "string"
+                    },
+                    "algorithm": {
+                        "example": "RS256",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "example": "2026-01-01T00:15:00Z",
+                        "type": "string"
+                    },
+                    "delete_after": {
+                        "example": "2026-01-01T00:50:00Z",
+                        "type": "string"
+                    },
+                    "introduced_at": {
+                        "example": "2026-01-01T00:15:00Z",
+                        "type": "string"
+                    },
+                    "is_published": {
+                        "example": true,
+                        "type": "boolean"
+                    },
+                    "key_id": {
+                        "example": "NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs",
+                        "type": "string"
+                    },
+                    "status": {
+                        "enum": [
+                            "pending",
+                            "active",
+                            "inactive",
+                            "expired"
+                        ],
+                        "example": "active",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.SigningKeyList": {
+                "properties": {
+                    "data": {
+                        "items": {
+                            "$ref": "#/components/schemas/apidoc.SigningKey"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "now": {
+                        "example": "2026-01-01T00:25:00Z",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "apidoc.UpsertEntitlementRequest": {
+                "properties": {
+                    "offer": {
+                        "$ref": "#/components/schemas/apidoc.OfferRequest"
+                    },
+                    "products": {
+                        "example": "com.partner.product1",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "BearerAuth": {
+                "description": "\"Bearer <JWT signed by my_app>\". The token must carry kid, iss = PEER_ISSUER, provider = PEER_PROVIDER and the aud of the route.",
+                "in": "header",
+                "name": "Authorization",
+                "type": "apiKey"
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "",
+        "url": ""
+    },
+    "info": {
+        "description": "Provider side of the JWKS key rotation simulation: Entitlement API protected by my_app JWTs, its own rotating JWKS, and debug views of both key sets. Every failure uses one error envelope; see apidoc.ErrorEnvelope.",
+        "title": "partner_app API",
+        "version": "1.0"
+    },
+    "openapi": "3.1.0",
+    "paths": {
+        "/.well-known/jwks.json": {
+            "get": {
+                "description": "Public keys of every signing key that is pending, active or inactive. my_app polls this to verify activation notification tokens. Cache-Control max-age follows PEER_JWKS_POLL_INTERVAL.",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.JSONWebKeySet"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "JSON Web Key Set of partner_app",
+                "tags": [
+                    "signing-key"
+                ]
+            }
+        },
+        "/health": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Health"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Liveness probe",
+                "tags": [
+                    "health"
+                ]
+            }
+        },
+        "/health/db": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Health"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "503": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "DATABASE_UNREACHABLE"
+                    }
+                },
+                "summary": "Readiness probe (database round-trip)",
+                "tags": [
+                    "health"
+                ]
+            }
+        },
+        "/peer-signing-keys": {
+            "get": {
+                "description": "Keys this app currently trusts to verify my_app tokens, plus the result of the last fetch.",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.PeerSigningKeyList"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Cached JWKS of my_app (debug)",
+                "tags": [
+                    "signing-key"
+                ]
+            }
+        },
+        "/signing-keys": {
+            "get": {
+                "description": "Status is derived from now: pending (published, not signing), active (the only signer), inactive (published, tokens still valid), expired (about to be deleted). Never exposes private key material.",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.SigningKeyList"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Lifecycle of every signing key (debug)",
+                "tags": [
+                    "signing-key"
+                ]
+            }
+        },
+        "/subjects/{subject_id}/entitlements": {
+            "get": {
+                "description": "Requires a my_app JWT with aud = ENTITLEMENT_GET_AUDIENCE. Scoped to the token provider.",
+                "parameters": [
+                    {
+                        "description": "customer identifier",
+                        "example": "SUB001",
+                        "in": "path",
+                        "name": "subject_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.EntitlementList"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "SUBJECT_ID_INVALID"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "TOKEN_INVALID, TOKEN_ISSUER_UNKNOWN, TOKEN_SIGNING_KEY_NOT_FOUND, TOKEN_CLAIM_INVALID"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "List every entitlement of one subject",
+                "tags": [
+                    "entitlement"
+                ]
+            }
+        },
+        "/subjects/{subject_id}/entitlements/{entitlement_id}": {
+            "get": {
+                "description": "Requires a my_app JWT with aud = ENTITLEMENT_GET_AUDIENCE (default get.entitlement.partner-app.local). Scoped to the token provider.",
+                "parameters": [
+                    {
+                        "description": "customer identifier",
+                        "example": "SUB001",
+                        "in": "path",
+                        "name": "subject_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "entitlement identifier",
+                        "example": "ENT001",
+                        "in": "path",
+                        "name": "entitlement_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Entitlement"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "SUBJECT_ID_INVALID, ENTITLEMENT_ID_INVALID"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "TOKEN_INVALID, TOKEN_ISSUER_UNKNOWN, TOKEN_SIGNING_KEY_NOT_FOUND, TOKEN_CLAIM_INVALID"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "ENTITLEMENT_NOT_FOUND"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "get_entitlement: read one entitlement",
+                "tags": [
+                    "entitlement"
+                ]
+            },
+            "put": {
+                "description": "Requires a my_app JWT with aud = ENTITLEMENT_SET_AUDIENCE (default set.entitlement.partner-app.local) and provider = PEER_PROVIDER. Sets status ACTIVE and clears terminated_at. The token iat becomes last_updated_at; an iat older than the stored value is rejected. Queues an entitlement_upserted activation notification to my_app.",
+                "parameters": [
+                    {
+                        "description": "customer identifier, [0-9a-zA-Z-._=]+",
+                        "example": "SUB001",
+                        "in": "path",
+                        "name": "subject_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "entitlement identifier, [0-9a-zA-Z-._=]+",
+                        "example": "ENT001",
+                        "in": "path",
+                        "name": "entitlement_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/apidoc.UpsertEntitlementRequest"
+                            }
+                        }
+                    },
+                    "description": "entitlement",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Entitlement"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "VALIDATION_FAILED, SUBJECT_ID_INVALID, ENTITLEMENT_ID_INVALID, ENTITLEMENT_STALE_UPDATE"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "TOKEN_INVALID, TOKEN_ISSUER_UNKNOWN, TOKEN_SIGNING_KEY_NOT_FOUND, TOKEN_CLAIM_INVALID"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "put_entitlement: activate (create, update or reactivate) one entitlement",
+                "tags": [
+                    "entitlement"
+                ]
+            }
+        },
+        "/subjects/{subject_id}/entitlements/{entitlement_id}/terminate": {
+            "post": {
+                "description": "Requires a my_app JWT with aud = ENTITLEMENT_SET_AUDIENCE and provider = PEER_PROVIDER. Sets status TERMINATED and terminated_at (kept on repeated calls). The token iat becomes last_updated_at; an iat older than the stored value is rejected. Queues an entitlement_terminated activation notification to my_app.",
+                "parameters": [
+                    {
+                        "description": "customer identifier",
+                        "example": "SUB001",
+                        "in": "path",
+                        "name": "subject_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "entitlement identifier",
+                        "example": "ENT001",
+                        "in": "path",
+                        "name": "entitlement_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.Entitlement"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "SUBJECT_ID_INVALID, ENTITLEMENT_ID_INVALID, ENTITLEMENT_STALE_UPDATE"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "TOKEN_INVALID, TOKEN_ISSUER_UNKNOWN, TOKEN_SIGNING_KEY_NOT_FOUND, TOKEN_CLAIM_INVALID"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "ENTITLEMENT_NOT_FOUND"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/apidoc.ErrorEnvelope"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Terminate one entitlement",
+                "tags": [
+                    "entitlement"
+                ]
+            }
+        }
+    }
+}

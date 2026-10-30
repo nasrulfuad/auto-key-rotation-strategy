@@ -1,0 +1,19 @@
+services:
+  my_app:
+    build:
+      context: ./my_app
+      target: dev
+    volumes:
+      - ./my_app:/src
+      - go-build-cache:/root/.cache/go-build
+
+  partner_app:
+    build:
+      context: ./partner_app
+      target: dev
+    volumes:
+      - ./partner_app:/src
+      - go-build-cache:/root/.cache/go-build
+
+volumes:
+  go-build-cache:
