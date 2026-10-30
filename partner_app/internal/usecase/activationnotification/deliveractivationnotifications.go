@@ -10,10 +10,6 @@ import (
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock"
 )
 
-type TokenSigner interface {
-	Sign(ctx context.Context, request domain.TokenRequest) (domain.SignedToken, error)
-}
-
 type DeliverActivationNotificationsInteractor struct {
 	activationNotificationReader repository.ActivationNotificationReader
 	activationNotificationWriter repository.ActivationNotificationWriter

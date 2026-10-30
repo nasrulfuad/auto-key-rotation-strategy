@@ -34,20 +34,3 @@ func (r *JobLockRepository) WithLock(ctx context.Context, jobName string, run fu
 	})
 	return acquired, err
 }
-
-type DatabaseProbeRepository struct {
-	queries store.Querier
-}
-
-var _ repository.DatabaseProbe = (*DatabaseProbeRepository)(nil)
-
-func NewDatabaseProbeRepository(queries store.Querier) *DatabaseProbeRepository {
-	return &DatabaseProbeRepository{queries: queries}
-}
-
-func (r *DatabaseProbeRepository) Ping(ctx context.Context) error {
-	if _, err := r.queries.Ping(ctx); err != nil {
-		return domain.DB(err)
-	}
-	return nil
-}

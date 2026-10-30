@@ -38,7 +38,8 @@ Repository and gateway interfaces live in the layer packages `adapter/repository
 - Repository: `internal/adapter/repository/<entity>repository.go`, package `repository`, holding `<Entity>Reader` / `<Entity>Writer` and their parameter structs (`SigningKeyCreate`, `SigningKeyRotate`). `JobLock` and `DatabaseProbe` have their own files. Implemented in `repository/postgres` with a compile-time assertion (`var _ repository.SigningKeyReader = (*SigningKeyRepository)(nil)`).
 - Gateway: `internal/adapter/gateway/<entity>gateway.go`, package `gateway`, implemented in `gateway/http`.
 - Infrastructure: one `<role>.go` per interface in the implementing package (`KeyPairGenerator`, `PrivateKeySealer`, `TokenIssuer`, `TokenVerifier`, `PeerKeySet`, `Clock`, `UUIDGenerator`, `Logger`); the implementation file carries the `impl` suffix.
-- Interfaces never share a file with an implementation.
+- Interfaces never share a file with an implementation. Every file that implements an interface carries the `impl` suffix after the interface file's name: `repository/postgres/signingkeyrepositoryimpl.go`, `gateway/http/partnerentitlementgatewayimpl.go`, `infra/jwt/tokenissuerimpl.go`, `usecase/signingkey/tokensignerimpl.go`. The only exception is sqlc's generated `store/querier.go`.
+- An interface a use case declares for another use case (`TokenSigner`) lives in its own `<role>.go` in the consuming package; the implementation's compile-time assertion sits in a test file (`tokensignerimpl_test.go`) so the implementing package does not import its consumer.
 - Mocks are generated with mockery v3 (`make mocks`, interfaces listed in `.mockery.yml`) into a `<package>mocks` directory next to the interfaces (`repository/repositorymocks`, `gateway/gatewaymocks`, `systemclock/systemclockmocks`); never hand-written.
 
 ## 5. Adapters
