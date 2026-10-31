@@ -17,15 +17,9 @@ type TrackSigningKeyStatusesInteractor struct {
 	observedStatuses map[string]domain.SigningKeyStatus
 }
 
-func NewTrackSigningKeyStatusesInteractor(
-	signingKeyReader repository.SigningKeyReader,
-	clock systemclock.Clock,
-	logger logging.Logger,
-) *TrackSigningKeyStatusesInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
-	return &TrackSigningKeyStatusesInteractor{signingKeyReader: signingKeyReader, clock: clock, logger: logger}
+func NewTrackSigningKeyStatusesInteractor(signingKeyReader repository.SigningKeyReader, opts ...Option) *TrackSigningKeyStatusesInteractor {
+	o := newOptions(opts)
+	return &TrackSigningKeyStatusesInteractor{signingKeyReader: signingKeyReader, clock: o.clock, logger: o.logger}
 }
 
 func (i *TrackSigningKeyStatusesInteractor) Execute(ctx context.Context) error {

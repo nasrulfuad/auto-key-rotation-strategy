@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 
@@ -17,7 +15,6 @@ import (
 	echoserver "github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/echo"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/jwks"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/jwt"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
 	infrapostgres "github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/postgres"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/rsakey"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/scheduler"
@@ -39,17 +36,6 @@ const (
 )
 
 // Overrides replace dependencies of the container, for tests.
-type Overrides struct {
-	// Clock replaces the system clock; nil uses systemclock.New.
-	Clock systemclock.Clock
-
-	// HTTPClient is used for every outbound call; nil uses an http.Client with a 5s timeout.
-	HTTPClient *http.Client
-
-	// OpenAPISpec is served at /openapi.json when ENABLE_API_DOCS is true.
-	OpenAPISpec []byte
-}
-
 type Container struct {
 	DB        *sql.DB
 	Echo      *echo.Echo
@@ -57,82 +43,114 @@ type Container struct {
 	Signer    *signingkey.Signer
 }
 
-func New(cfg *config.Config, logger logging.Logger, openAPISpec []byte) (*Container, error) {
+func New(cfg *config.Config, opts ...Option) (*Container, error) {
 	db, err := infrapostgres.Open(cfg.DatabaseURL, cfg.DatabaseMaxConnections)
 	if err != nil {
 		return nil, err
 	}
-	container, err := NewWithDB(cfg, db, logger, Overrides{OpenAPISpec: openAPISpec})
+	container, err := NewWithDB(cfg, db, opts...)
 	if err != nil {
 		return nil, errors.Join(err, db.Close())
 	}
 	return container, nil
 }
 
-func NewWithDB(cfg *config.Config, db *sql.DB, logger logging.Logger, overrides Overrides) (*Container, error) {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
-	systemClock := overrides.Clock
-	if systemClock == nil {
-		systemClock = systemclock.New()
-	}
-	httpClient := overrides.HTTPClient
-	if httpClient == nil {
-		httpClient = &http.Client{Timeout: 5 * time.Second}
-	}
+func NewWithDB(cfg *config.Config, db *sql.DB, opts ...Option) (*Container, error) {
+	o := newOptions(opts)
+	logger := o.logger
+	systemClock := o.clock
+	httpClient := o.httpClient
 	uuidGenerator := systemclock.NewUUIDGenerator()
 
 	privateKeySealer, err := sealer.NewAESGCM(cfg.KeyEncryptionKey)
 	if err != nil {
 		return nil, err
 	}
-	keyPairGenerator, err := rsakey.NewGenerator(cfg.KeyRSABits)
+	keyPairGenerator, err := rsakey.NewGenerator(rsakey.WithBits(cfg.KeyRSABits))
 	if err != nil {
 		return nil, err
 	}
 
 	queries := store.New(db)
-	signingKeyRepository := postgres.NewSigningKeyRepository(db, queries, privateKeySealer)
-	activationNotificationRepository := postgres.NewActivationNotificationRepository(queries)
+	signingKeyRepository := postgres.NewSigningKeyRepository(db, privateKeySealer, postgres.WithQuerier(queries))
+	activationNotificationRepository := postgres.NewActivationNotificationRepository(db, postgres.WithQuerier(queries))
 	jobLock := postgres.NewJobLockRepository(db)
-	databaseProbe := postgres.NewDatabaseProbeRepository(queries)
+	databaseProbe := postgres.NewDatabaseProbeRepository(db, postgres.WithQuerier(queries))
 
-	peerKeySet := jwks.NewRemoteKeySet(jwks.Options{
-		URL:                    cfg.PeerJWKSURL,
-		Client:                 httpClient,
-		RefreshOnUnknownKeyID:  cfg.PeerJWKSRefreshOnUnknownKeyID,
-		RefreshMinimumInterval: cfg.PeerJWKSRefreshMinInterval,
-	}, systemClock, logger)
+	peerKeySet := jwks.NewRemoteKeySet(cfg.PeerJWKSURL,
+		jwks.WithHTTPClient(httpClient),
+		jwks.WithRefreshOnUnknownKeyID(cfg.PeerJWKSRefreshOnUnknownKeyID),
+		jwks.WithRefreshMinimumInterval(cfg.PeerJWKSRefreshMinInterval),
+		jwks.WithClock(systemClock),
+		jwks.WithLogger(logger),
+	)
 	tokenIssuer := jwt.NewIssuer(signingKeyRepository)
-	tokenVerifier := jwt.NewVerifier(peerKeySet, cfg.PeerKeyAlgorithm, logger)
-	signer := signingkey.NewSigner(signingKeyRepository, tokenIssuer, systemClock, uuidGenerator, cfg.TokenIssuer, cfg.TokenTTL)
-	partnerEntitlementGateway := gateway.NewPartnerEntitlementClient(cfg.PartnerBaseURL, httpClient)
+	tokenVerifier := jwt.NewVerifier(peerKeySet, cfg.PeerKeyAlgorithm, jwt.WithLogger(logger))
+	signer := signingkey.NewSigner(signingKeyRepository, tokenIssuer, cfg.TokenIssuer, cfg.TokenTTL, signingkey.WithClock(systemClock), signingkey.WithUUIDGenerator(uuidGenerator))
+	partnerEntitlementGateway := gateway.NewPartnerEntitlementClient(cfg.PartnerBaseURL, gateway.WithHTTPClient(httpClient))
 
-	ensureSigningKeysUC := signingkey.NewEnsureSigningKeysInteractor(signingKeyRepository, signingKeyRepository, keyPairGenerator,
-		systemClock, uuidGenerator, logger, cfg.KeySchedule, cfg.KeyAlgorithm)
-	deleteExpiredSigningKeysUC := signingkey.NewDeleteExpiredSigningKeysInteractor(signingKeyRepository, systemClock, logger)
-	trackSigningKeyStatusesUC := signingkey.NewTrackSigningKeyStatusesInteractor(signingKeyRepository, systemClock, logger)
-	listPublishedSigningKeysUC := signingkey.NewListPublishedSigningKeysInteractor(signingKeyRepository, systemClock)
-	listSigningKeysUC := signingkey.NewListSigningKeysInteractor(signingKeyRepository, systemClock)
-	rotateSigningKeyUC := signingkey.NewRotateSigningKeyInteractor(jobLock, signingKeyRepository, signingKeyRepository, keyPairGenerator,
-		systemClock, uuidGenerator, logger, JobEnsureSigningKeys, cfg.KeySchedule, cfg.KeyAlgorithm)
+	ensureSigningKeysUC := signingkey.NewEnsureSigningKeysInteractor(
+		signingKeyRepository,
+		signingKeyRepository,
+		keyPairGenerator,
+		cfg.KeySchedule,
+		cfg.KeyAlgorithm,
+		signingkey.WithClock(systemClock),
+		signingkey.WithUUIDGenerator(uuidGenerator),
+		signingkey.WithLogger(logger),
+	)
+	deleteExpiredSigningKeysUC := signingkey.NewDeleteExpiredSigningKeysInteractor(signingKeyRepository, signingkey.WithClock(systemClock), signingkey.WithLogger(logger))
+	trackSigningKeyStatusesUC := signingkey.NewTrackSigningKeyStatusesInteractor(signingKeyRepository, signingkey.WithClock(systemClock), signingkey.WithLogger(logger))
+	listPublishedSigningKeysUC := signingkey.NewListPublishedSigningKeysInteractor(signingKeyRepository, signingkey.WithClock(systemClock))
+	listSigningKeysUC := signingkey.NewListSigningKeysInteractor(signingKeyRepository, signingkey.WithClock(systemClock))
+	rotateSigningKeyUC := signingkey.NewRotateSigningKeyInteractor(
+		jobLock,
+		signingKeyRepository,
+		signingKeyRepository,
+		keyPairGenerator,
+		JobEnsureSigningKeys,
+		cfg.KeySchedule,
+		cfg.KeyAlgorithm,
+		signingkey.WithClock(systemClock),
+		signingkey.WithUUIDGenerator(uuidGenerator),
+		signingkey.WithLogger(logger),
+	)
 	listPeerSigningKeysUC := peersigningkey.NewListPeerSigningKeysInteractor(peerKeySet)
 	refreshPeerSigningKeysUC := peersigningkey.NewRefreshPeerSigningKeysInteractor(peerKeySet)
-	authenticatePeerRequestUC := authentication.NewAuthenticatePeerRequestInteractor(tokenVerifier, systemClock, cfg.PeerIssuer, cfg.TokenLeeway)
-	subscriptionRepository := postgres.NewSubscriptionRepository(queries)
-	activateSubscriptionUC := subscription.NewActivateSubscriptionInteractor(partnerEntitlementGateway, subscriptionRepository, signer,
-		systemClock, uuidGenerator, logger, cfg.EntitlementSetAudience, cfg.Provider)
-	terminateSubscriptionUC := subscription.NewTerminateSubscriptionInteractor(partnerEntitlementGateway, subscriptionRepository, signer,
-		systemClock, uuidGenerator, logger, cfg.EntitlementSetAudience, cfg.Provider)
+	authenticatePeerRequestUC := authentication.NewAuthenticatePeerRequestInteractor(tokenVerifier, cfg.PeerIssuer, cfg.TokenLeeway, authentication.WithClock(systemClock))
+	subscriptionRepository := postgres.NewSubscriptionRepository(db, postgres.WithQuerier(queries))
+	activateSubscriptionUC := subscription.NewActivateSubscriptionInteractor(
+		partnerEntitlementGateway,
+		subscriptionRepository,
+		signer,
+		cfg.EntitlementSetAudience,
+		cfg.Provider,
+		subscription.WithClock(systemClock),
+		subscription.WithUUIDGenerator(uuidGenerator),
+		subscription.WithLogger(logger),
+	)
+	terminateSubscriptionUC := subscription.NewTerminateSubscriptionInteractor(
+		partnerEntitlementGateway,
+		subscriptionRepository,
+		signer,
+		cfg.EntitlementSetAudience,
+		cfg.Provider,
+		subscription.WithClock(systemClock),
+		subscription.WithUUIDGenerator(uuidGenerator),
+		subscription.WithLogger(logger),
+	)
 	listSubscriptionsUC := subscription.NewListSubscriptionsInteractor(subscriptionRepository)
 	receiveActivationNotificationUC := activationnotification.NewReceiveActivationNotificationInteractor(
-		activationNotificationRepository, systemClock, uuidGenerator, logger)
+		activationNotificationRepository,
+		activationnotification.WithClock(systemClock),
+		activationnotification.WithUUIDGenerator(uuidGenerator),
+		activationnotification.WithLogger(logger),
+	)
 	listActivationNotificationsUC := activationnotification.NewListActivationNotificationsInteractor(activationNotificationRepository)
 
-	var docsController *controller.DocsController
+	var routerOptions []controller.Option
 	if cfg.EnableAPIDocs {
-		docsController = controller.NewDocsController(overrides.OpenAPISpec)
+		routerOptions = append(routerOptions, controller.WithDocs(controller.NewDocsController(o.openAPISpec)))
 	}
 	router := controller.NewRouter(
 		controller.NewHealthController(databaseProbe, presenter.NewHealthPresenter()),
@@ -142,18 +160,19 @@ func NewWithDB(cfg *config.Config, db *sql.DB, logger logging.Logger, overrides 
 			presenter.NewSubscriptionPresenter()),
 		controller.NewActivationNotificationController(receiveActivationNotificationUC, listActivationNotificationsUC,
 			presenter.NewActivationNotificationPresenter()),
-		controller.NewPeerAuthMiddleware(authenticatePeerRequestUC, logger),
-		docsController,
+		controller.NewPeerAuthMiddleware(authenticatePeerRequestUC, controller.WithLogger(logger)),
 		controller.Audiences{ActivationNotification: cfg.ActivationNotificationAudience},
+		routerOptions...,
 	)
-	server := echoserver.New(echoserver.Options{RequestTimeout: cfg.RequestTimeout, Logger: logger}, router, presenter.NewErrorPresenter(logger))
+	server := echoserver.New(router, presenter.NewErrorPresenter(presenter.WithLogger(logger)),
+		echoserver.WithRequestTimeout(cfg.RequestTimeout), echoserver.WithLogger(logger))
 
-	runner := scheduler.NewRunner(jobLock, logger,
-		scheduler.Job{Name: JobEnsureSigningKeys, Interval: cfg.KeyRotationCheckInterval, Exclusive: true, Run: ensureSigningKeysUC.Execute},
-		scheduler.Job{Name: JobDeleteExpiredSigningKeys, Interval: cfg.KeyRotationCheckInterval, Exclusive: true, Run: deleteExpiredSigningKeysUC.Execute},
-		scheduler.Job{Name: JobRefreshPeerSigningKeys, Interval: cfg.PeerJWKSPollInterval, Run: refreshPeerSigningKeysUC.Execute},
-		scheduler.Job{Name: JobTrackSigningKeyStatuses, Interval: cfg.KeyRotationCheckInterval, Run: trackSigningKeyStatusesUC.Execute},
-	)
+	runner := scheduler.NewRunner(jobLock, []scheduler.Job{
+		{Name: JobEnsureSigningKeys, Interval: cfg.KeyRotationCheckInterval, Exclusive: true, Run: ensureSigningKeysUC.Execute},
+		{Name: JobDeleteExpiredSigningKeys, Interval: cfg.KeyRotationCheckInterval, Exclusive: true, Run: deleteExpiredSigningKeysUC.Execute},
+		{Name: JobRefreshPeerSigningKeys, Interval: cfg.PeerJWKSPollInterval, Run: refreshPeerSigningKeysUC.Execute},
+		{Name: JobTrackSigningKeyStatuses, Interval: cfg.KeyRotationCheckInterval, Run: trackSigningKeyStatusesUC.Execute},
+	}, scheduler.WithLogger(logger))
 
 	return &Container{DB: db, Echo: server, Scheduler: runner, Signer: signer}, nil
 }

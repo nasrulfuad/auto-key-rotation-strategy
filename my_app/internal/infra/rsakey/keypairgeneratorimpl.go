@@ -22,7 +22,8 @@ type Generator struct {
 
 var _ KeyPairGenerator = Generator{}
 
-func NewGenerator(bits int) (Generator, error) {
+func NewGenerator(opts ...Option) (Generator, error) {
+	bits := newOptions(opts).bits
 	if bits < MinimumBits {
 		return Generator{}, fmt.Errorf("RSA key size %d is below the minimum of %d bits", bits, MinimumBits)
 	}

@@ -122,12 +122,8 @@ func sign(t *testing.T, claims domain.TokenClaims, key peerKey) string {
 }
 
 func newVerifier(p *peer, clock *fixedClock, refreshOnUnknownKeyID bool) (*jwt.Verifier, *jwks.RemoteKeySet) {
-	keySet := jwks.NewRemoteKeySet(jwks.Options{
-		URL:                    p.server.URL,
-		RefreshOnUnknownKeyID:  refreshOnUnknownKeyID,
-		RefreshMinimumInterval: 10 * time.Second,
-	}, clock, nil)
-	return jwt.NewVerifier(keySet, domain.SigningAlgorithmRS256, nil), keySet
+	keySet := jwks.NewRemoteKeySet(p.server.URL, jwks.WithRefreshOnUnknownKeyID(refreshOnUnknownKeyID), jwks.WithRefreshMinimumInterval(10*time.Second), jwks.WithClock(clock))
+	return jwt.NewVerifier(keySet, domain.SigningAlgorithmRS256), keySet
 }
 
 func TestVerifierAcceptsTokenAndReportsKeyID(t *testing.T) {

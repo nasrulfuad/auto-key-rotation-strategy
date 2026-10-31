@@ -8,7 +8,9 @@ import (
 
 type PeerSigningKeyPresenter struct{}
 
-func NewPeerSigningKeyPresenter() *PeerSigningKeyPresenter { return &PeerSigningKeyPresenter{} }
+func NewPeerSigningKeyPresenter(opts ...Option) *PeerSigningKeyPresenter {
+	return &PeerSigningKeyPresenter{}
+}
 
 type peerSigningKeyListBody struct {
 	URL           string               `json:"url"`

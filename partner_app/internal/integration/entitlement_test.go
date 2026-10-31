@@ -187,8 +187,8 @@ func TestEntitlementLifecycleWithPeerTokens(t *testing.T) {
 	peer.mu.Unlock()
 	assert.Equal(t, []string{"entitlement_upserted", "entitlement_terminated", "entitlement_upserted"}, events)
 
-	keySet := jwks.NewRemoteKeySet(jwks.Options{URL: a.jwksURL(), RefreshOnUnknownKeyID: true}, a.clock, nil)
-	verified, err := jwt.NewVerifier(keySet, domain.SigningAlgorithmRS256, nil).Verify(context.Background(), notifications[0].token,
+	keySet := jwks.NewRemoteKeySet(a.jwksURL(), jwks.WithRefreshOnUnknownKeyID(true), jwks.WithClock(a.clock))
+	verified, err := jwt.NewVerifier(keySet, domain.SigningAlgorithmRS256).Verify(context.Background(), notifications[0].token,
 		domain.TokenExpectation{Issuer: "qa.partner-app.local", Audience: "activation-notification.my-app.local"}, a.clock.Now())
 	require.NoError(t, err)
 	assert.Equal(t, "SUB001", verified.Claims.Subject)

@@ -15,7 +15,7 @@ type JobLockRepository struct {
 
 var _ repository.JobLock = (*JobLockRepository)(nil)
 
-func NewJobLockRepository(db *sql.DB) *JobLockRepository {
+func NewJobLockRepository(db *sql.DB, opts ...Option) *JobLockRepository {
 	return &JobLockRepository{db: db}
 }
 

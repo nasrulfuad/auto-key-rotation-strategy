@@ -24,7 +24,7 @@ func TestPartnerEntitlementClientSendsBearerAndMapsRejections(t *testing.T) {
 	}))
 	defer server.Close()
 
-	_, err := httpgateway.NewPartnerEntitlementClient(server.URL, nil).Terminate(context.Background(),
+	_, err := httpgateway.NewPartnerEntitlementClient(server.URL).Terminate(context.Background(),
 		gateway.PartnerEntitlementTerminate{Token: "jwt", SubjectID: "SUB1", EntitlementID: "ENT1"})
 
 	assert.Equal(t, "Bearer jwt", authorization)
@@ -40,7 +40,7 @@ func TestPartnerEntitlementClientReportsUnreachablePartner(t *testing.T) {
 	server := httptest.NewServer(http.NotFoundHandler())
 	server.Close()
 
-	_, err := httpgateway.NewPartnerEntitlementClient(server.URL, nil).Upsert(context.Background(), gateway.PartnerEntitlementUpsert{Token: "jwt"})
+	_, err := httpgateway.NewPartnerEntitlementClient(server.URL).Upsert(context.Background(), gateway.PartnerEntitlementUpsert{Token: "jwt"})
 
 	assert.ErrorIs(t, err, domain.ErrPartnerUnavailable)
 }

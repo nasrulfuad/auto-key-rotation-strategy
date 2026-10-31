@@ -28,7 +28,7 @@ func newTrackFixture(t *testing.T) trackFixture {
 		clock:  systemclockmocks.NewMockClock(t),
 		logger: loggingmocks.NewMockLogger(t),
 	}
-	f.uc = signingkey.NewTrackSigningKeyStatusesInteractor(f.reader, f.clock, f.logger)
+	f.uc = signingkey.NewTrackSigningKeyStatusesInteractor(f.reader, signingkey.WithClock(f.clock), signingkey.WithLogger(f.logger))
 	return f
 }
 

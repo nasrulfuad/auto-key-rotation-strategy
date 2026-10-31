@@ -24,6 +24,7 @@ func NewEntitlementController(
 	listEntitlements *entitlement.ListEntitlementsInteractor,
 	terminateEntitlement *entitlement.TerminateEntitlementInteractor,
 	entitlementPresenter *presenter.EntitlementPresenter,
+	opts ...Option,
 ) *EntitlementController {
 	return &EntitlementController{
 		upsertEntitlement:    upsertEntitlement,

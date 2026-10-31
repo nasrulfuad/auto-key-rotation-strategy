@@ -17,7 +17,7 @@ func TestRunnerTagsEveryRunWithSourceJobAndLogID(t *testing.T) {
 		fieldsPerRun = append(fieldsPerRun, logging.ListContextFields(ctx))
 		return nil
 	}}
-	runner := scheduler.NewRunner(nil, nil, job)
+	runner := scheduler.NewRunner(nil, []scheduler.Job{job})
 
 	require.NoError(t, runner.RunOnce(context.Background(), "ensure_signing_keys"))
 	require.NoError(t, runner.RunOnce(context.Background(), "ensure_signing_keys"))

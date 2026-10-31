@@ -14,15 +14,9 @@ type DeleteExpiredSigningKeysInteractor struct {
 	logger           logging.Logger
 }
 
-func NewDeleteExpiredSigningKeysInteractor(
-	signingKeyWriter repository.SigningKeyWriter,
-	clock systemclock.Clock,
-	logger logging.Logger,
-) *DeleteExpiredSigningKeysInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
-	return &DeleteExpiredSigningKeysInteractor{signingKeyWriter: signingKeyWriter, clock: clock, logger: logger}
+func NewDeleteExpiredSigningKeysInteractor(signingKeyWriter repository.SigningKeyWriter, opts ...Option) *DeleteExpiredSigningKeysInteractor {
+	o := newOptions(opts)
+	return &DeleteExpiredSigningKeysInteractor{signingKeyWriter: signingKeyWriter, clock: o.clock, logger: o.logger}
 }
 
 func (i *DeleteExpiredSigningKeysInteractor) Execute(ctx context.Context) error {

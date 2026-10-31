@@ -19,7 +19,11 @@ type GetEntitlementInteractor struct {
 	peerProvider string
 }
 
-func NewGetEntitlementInteractor(entitlementReader repository.EntitlementReader, peerProvider string) *GetEntitlementInteractor {
+func NewGetEntitlementInteractor(
+	entitlementReader repository.EntitlementReader,
+	peerProvider string,
+	opts ...Option,
+) *GetEntitlementInteractor {
 	return &GetEntitlementInteractor{entitlementReader: entitlementReader, peerProvider: peerProvider}
 }
 

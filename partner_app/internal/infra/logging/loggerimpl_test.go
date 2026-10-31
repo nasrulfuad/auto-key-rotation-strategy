@@ -21,7 +21,7 @@ func decodeLogLine(t *testing.T, buffer *bytes.Buffer) map[string]any {
 
 func TestLoggerWritesContextFieldsBeforeCallFields(t *testing.T) {
 	var buffer bytes.Buffer
-	logger := logging.NewJSON(&buffer, "debug", "partner_app")
+	logger := logging.NewJSON(&buffer, logging.WithLevel("debug"), logging.WithService("partner_app"))
 	ctx := logging.AddContextFields(context.Background(), logging.FieldSource, logging.SourceAPI, logging.FieldLogID, "log-1")
 
 	logger.Info(ctx, "request completed", "status", 200)
@@ -35,7 +35,7 @@ func TestLoggerWritesContextFieldsBeforeCallFields(t *testing.T) {
 
 func TestLoggerOmitsContextFieldsWhenNoneAreSet(t *testing.T) {
 	var buffer bytes.Buffer
-	logger := logging.NewJSON(&buffer, "debug", "partner_app")
+	logger := logging.NewJSON(&buffer, logging.WithLevel("debug"), logging.WithService("partner_app"))
 
 	logger.Info(context.Background(), "signing key created")
 

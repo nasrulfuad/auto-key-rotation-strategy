@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
@@ -18,8 +19,8 @@ var (
 	_ repository.SubscriptionWriter = (*SubscriptionRepository)(nil)
 )
 
-func NewSubscriptionRepository(queries store.Querier) *SubscriptionRepository {
-	return &SubscriptionRepository{queries: queries}
+func NewSubscriptionRepository(db *sql.DB, opts ...Option) *SubscriptionRepository {
+	return &SubscriptionRepository{queries: newOptions(db, opts).querier}
 }
 
 func (r *SubscriptionRepository) Upsert(ctx context.Context, subscription domain.Subscription, now time.Time) (domain.Subscription, error) {

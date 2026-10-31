@@ -25,11 +25,8 @@ type Runner struct {
 	logger  logging.Logger
 }
 
-func NewRunner(jobLock repository.JobLock, logger logging.Logger, jobs ...Job) *Runner {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
-	return &Runner{jobs: jobs, jobLock: jobLock, logger: logger}
+func NewRunner(jobLock repository.JobLock, jobs []Job, opts ...Option) *Runner {
+	return &Runner{jobs: jobs, jobLock: jobLock, logger: newOptions(opts).logger}
 }
 
 func (r *Runner) Start(ctx context.Context) {

@@ -13,8 +13,9 @@ type ListPublishedSigningKeysInteractor struct {
 	clock            systemclock.Clock
 }
 
-func NewListPublishedSigningKeysInteractor(signingKeyReader repository.SigningKeyReader, clock systemclock.Clock) *ListPublishedSigningKeysInteractor {
-	return &ListPublishedSigningKeysInteractor{signingKeyReader: signingKeyReader, clock: clock}
+func NewListPublishedSigningKeysInteractor(signingKeyReader repository.SigningKeyReader, opts ...Option) *ListPublishedSigningKeysInteractor {
+	o := newOptions(opts)
+	return &ListPublishedSigningKeysInteractor{signingKeyReader: signingKeyReader, clock: o.clock}
 }
 
 func (i *ListPublishedSigningKeysInteractor) Execute(ctx context.Context) ([]domain.SigningKey, error) {

@@ -17,6 +17,7 @@ type PeerSigningKeyController struct {
 func NewPeerSigningKeyController(
 	listPeerSigningKeys *peersigningkey.ListPeerSigningKeysInteractor,
 	peerSigningKeyPresenter *presenter.PeerSigningKeyPresenter,
+	opts ...Option,
 ) *PeerSigningKeyController {
 	return &PeerSigningKeyController{listPeerSigningKeys: listPeerSigningKeys, presenter: peerSigningKeyPresenter}
 }

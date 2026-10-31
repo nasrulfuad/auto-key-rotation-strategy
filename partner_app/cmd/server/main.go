@@ -46,7 +46,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("failed to load configuration: %w", err)
 	}
-	logger := logging.NewJSON(os.Stdout, cfg.LogLevel, serviceName)
+	logger := logging.NewJSON(os.Stdout, logging.WithLevel(cfg.LogLevel), logging.WithService(serviceName))
 	startupCtx := context.Background()
 	for _, warning := range cfg.Warnings {
 		logger.Warn(startupCtx, warning)
@@ -57,7 +57,7 @@ func run() error {
 		return fmt.Errorf("failed to read the embedded OpenAPI spec: %w", err)
 	}
 
-	container, err := di.New(cfg, logger, openAPISpec)
+	container, err := di.New(cfg, di.WithLogger(logger), di.WithOpenAPISpec(openAPISpec))
 	if err != nil {
 		return err
 	}

@@ -36,24 +36,20 @@ func NewRotateSigningKeyInteractor(
 	signingKeyReader repository.SigningKeyReader,
 	signingKeyWriter repository.SigningKeyWriter,
 	keyPairGenerator rsakey.KeyPairGenerator,
-	clock systemclock.Clock,
-	uuidGenerator systemclock.UUIDGenerator,
-	logger logging.Logger,
 	lockName string,
 	schedule domain.SigningKeySchedule,
 	algorithm domain.SigningAlgorithm,
+	opts ...Option,
 ) *RotateSigningKeyInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
+	o := newOptions(opts)
 	return &RotateSigningKeyInteractor{
 		jobLock:          jobLock,
 		signingKeyReader: signingKeyReader,
 		signingKeyWriter: signingKeyWriter,
 		keyPairGenerator: keyPairGenerator,
-		clock:            clock,
-		uuidGenerator:    uuidGenerator,
-		logger:           logger,
+		clock:            o.clock,
+		uuidGenerator:    o.uuidGenerator,
+		logger:           o.logger,
 		lockName:         lockName,
 		schedule:         schedule,
 		algorithm:        algorithm,

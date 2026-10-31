@@ -48,8 +48,8 @@ func NewRouter(
 	subscription *SubscriptionController,
 	activationNotification *ActivationNotificationController,
 	peerAuthMiddleware *PeerAuthMiddleware,
-	docs *DocsController,
 	audiences Audiences,
+	opts ...Option,
 ) *Router {
 	return &Router{
 		health:                 health,
@@ -58,7 +58,7 @@ func NewRouter(
 		subscription:           subscription,
 		activationNotification: activationNotification,
 		peerAuthMiddleware:     peerAuthMiddleware,
-		docs:                   docs,
+		docs:                   newOptions(opts).docs,
 		audiences:              audiences,
 	}
 }

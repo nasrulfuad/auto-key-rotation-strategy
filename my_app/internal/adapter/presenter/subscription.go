@@ -8,7 +8,7 @@ import (
 
 type SubscriptionPresenter struct{}
 
-func NewSubscriptionPresenter() *SubscriptionPresenter { return &SubscriptionPresenter{} }
+func NewSubscriptionPresenter(opts ...Option) *SubscriptionPresenter { return &SubscriptionPresenter{} }
 
 type subscriptionBody struct {
 	SubjectID       string     `json:"subject_id"`

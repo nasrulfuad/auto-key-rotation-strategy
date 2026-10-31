@@ -17,11 +17,8 @@ type PeerAuthMiddleware struct {
 	logger                  logging.Logger
 }
 
-func NewPeerAuthMiddleware(authenticatePeerRequest *authentication.AuthenticatePeerRequestInteractor, logger logging.Logger) *PeerAuthMiddleware {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
-	return &PeerAuthMiddleware{authenticatePeerRequest: authenticatePeerRequest, logger: logger}
+func NewPeerAuthMiddleware(authenticatePeerRequest *authentication.AuthenticatePeerRequestInteractor, opts ...Option) *PeerAuthMiddleware {
+	return &PeerAuthMiddleware{authenticatePeerRequest: authenticatePeerRequest, logger: newOptions(opts).logger}
 }
 
 func (m *PeerAuthMiddleware) Require(audience domain.TokenAudience) echo.MiddlewareFunc {

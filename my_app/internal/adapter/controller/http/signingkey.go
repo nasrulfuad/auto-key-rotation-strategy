@@ -26,6 +26,7 @@ func NewSigningKeyController(
 	rotateSigningKey *signingkey.RotateSigningKeyInteractor,
 	signingKeyPresenter *presenter.SigningKeyPresenter,
 	cacheMaxAge time.Duration,
+	opts ...Option,
 ) *SigningKeyController {
 	return &SigningKeyController{
 		listPublishedSigningKeys: listPublishedSigningKeys,

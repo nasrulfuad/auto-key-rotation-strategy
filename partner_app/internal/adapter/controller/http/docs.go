@@ -10,7 +10,7 @@ type DocsController struct {
 	spec []byte
 }
 
-func NewDocsController(spec []byte) *DocsController {
+func NewDocsController(spec []byte, opts ...Option) *DocsController {
 	return &DocsController{spec: spec}
 }
 

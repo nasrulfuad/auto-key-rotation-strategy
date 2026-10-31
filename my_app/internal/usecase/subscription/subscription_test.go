@@ -46,7 +46,7 @@ func TestActivateSubscriptionCallsPartnerThenStoresLocally(t *testing.T) {
 		Status: domain.EntitlementStatusActive, SignedWithKeyID: "kid-1", ActivatedAt: &now,
 	}, now).Return(domain.Subscription{SubjectID: "SUB1", SignedWithKeyID: "kid-1"}, nil)
 
-	result, err := subscription.NewActivateSubscriptionInteractor(partnerEntitlementGateway, writer, signer, clock, uuids, nil, "set.aud", "my_app").
+	result, err := subscription.NewActivateSubscriptionInteractor(partnerEntitlementGateway, writer, signer, "set.aud", "my_app", subscription.WithClock(clock), subscription.WithUUIDGenerator(uuids)).
 		Execute(context.Background(), subscription.ActivateSubscriptionInput{SubjectID: "SUB1", EntitlementID: "ENT1", Products: "p", FreeTrial: "NONE"})
 
 	require.NoError(t, err)
@@ -60,7 +60,7 @@ func TestActivateSubscriptionStoresNothingWhenPartnerRejects(t *testing.T) {
 	rejection := domain.PartnerRequestRejected(401, "TOKEN_SIGNING_KEY_NOT_FOUND", "authentication required")
 	partnerEntitlementGateway.EXPECT().Upsert(mock.Anything, mock.Anything).Return(domain.PartnerEntitlement{}, rejection)
 
-	_, err := subscription.NewActivateSubscriptionInteractor(partnerEntitlementGateway, writer, &recordingSigner{}, systemclockmocks.NewMockClock(t), systemclockmocks.NewMockUUIDGenerator(t), nil, "set.aud", "my_app").
+	_, err := subscription.NewActivateSubscriptionInteractor(partnerEntitlementGateway, writer, &recordingSigner{}, "set.aud", "my_app", subscription.WithClock(systemclockmocks.NewMockClock(t)), subscription.WithUUIDGenerator(systemclockmocks.NewMockUUIDGenerator(t))).
 		Execute(context.Background(), subscription.ActivateSubscriptionInput{SubjectID: "SUB1", EntitlementID: "ENT1", Products: "p"})
 
 	assert.ErrorIs(t, err, rejection)
@@ -81,7 +81,7 @@ func TestTerminateSubscriptionUsesSetAudienceAndPartnerTerminatedAt(t *testing.T
 		return s.Status == domain.EntitlementStatusTerminated && s.TerminatedAt.Equal(terminatedAt) && s.ActivatedAt == nil
 	}), now).Return(domain.Subscription{Status: domain.EntitlementStatusTerminated}, nil)
 
-	_, err := subscription.NewTerminateSubscriptionInteractor(partnerEntitlementGateway, writer, signer, clock, uuids, nil, "set.aud", "my_app").
+	_, err := subscription.NewTerminateSubscriptionInteractor(partnerEntitlementGateway, writer, signer, "set.aud", "my_app", subscription.WithClock(clock), subscription.WithUUIDGenerator(uuids)).
 		Execute(context.Background(), subscription.TerminateSubscriptionInput{SubjectID: "SUB1", EntitlementID: "ENT1"})
 
 	require.NoError(t, err)
@@ -91,8 +91,15 @@ func TestTerminateSubscriptionUsesSetAudienceAndPartnerTerminatedAt(t *testing.T
 func TestTerminateSubscriptionRejectsInvalidIDsWithoutSigning(t *testing.T) {
 	signer := &recordingSigner{}
 
-	_, err := subscription.NewTerminateSubscriptionInteractor(gatewaymocks.NewMockPartnerEntitlementGateway(t), repositorymocks.NewMockSubscriptionWriter(t), signer,
-		systemclockmocks.NewMockClock(t), systemclockmocks.NewMockUUIDGenerator(t), nil, "set.aud", "my_app").
+	_, err := subscription.NewTerminateSubscriptionInteractor(
+		gatewaymocks.NewMockPartnerEntitlementGateway(t),
+		repositorymocks.NewMockSubscriptionWriter(t),
+		signer,
+		"set.aud",
+		"my_app",
+		subscription.WithClock(systemclockmocks.NewMockClock(t)),
+		subscription.WithUUIDGenerator(systemclockmocks.NewMockUUIDGenerator(t)),
+	).
 		Execute(context.Background(), subscription.TerminateSubscriptionInput{SubjectID: "SUB1", EntitlementID: "bad id"})
 
 	assert.ErrorIs(t, err, domain.ErrEntitlementIDInvalid)

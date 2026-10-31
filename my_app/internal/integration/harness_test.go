@@ -102,7 +102,7 @@ func newApp(t *testing.T, values map[string]string) *app {
 	})
 	require.NoError(t, err)
 	clock := &fakeClock{now: startTime}
-	container, err := di.NewWithDB(cfg, newDatabase(t), nil, di.Overrides{Clock: clock})
+	container, err := di.NewWithDB(cfg, newDatabase(t), di.WithClock(clock))
 	require.NoError(t, err)
 	server := httptest.NewServer(container.Echo)
 	t.Cleanup(server.Close)

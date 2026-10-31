@@ -29,20 +29,13 @@ type ReceiveActivationNotificationInteractor struct {
 	logger                       logging.Logger
 }
 
-func NewReceiveActivationNotificationInteractor(
-	activationNotificationWriter repository.ActivationNotificationWriter,
-	clock systemclock.Clock,
-	uuidGenerator systemclock.UUIDGenerator,
-	logger logging.Logger,
-) *ReceiveActivationNotificationInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
+func NewReceiveActivationNotificationInteractor(activationNotificationWriter repository.ActivationNotificationWriter, opts ...Option) *ReceiveActivationNotificationInteractor {
+	o := newOptions(opts)
 	return &ReceiveActivationNotificationInteractor{
 		activationNotificationWriter: activationNotificationWriter,
-		clock:                        clock,
-		uuidGenerator:                uuidGenerator,
-		logger:                       logger,
+		clock:                        o.clock,
+		uuidGenerator:                o.uuidGenerator,
+		logger:                       o.logger,
 	}
 }
 

@@ -28,19 +28,15 @@ type UpsertEntitlementInteractor struct {
 
 func NewUpsertEntitlementInteractor(
 	entitlementWriter repository.EntitlementWriter,
-	clock systemclock.Clock,
-	uuidGenerator systemclock.UUIDGenerator,
-	logger logging.Logger,
 	peerProvider string,
+	opts ...Option,
 ) *UpsertEntitlementInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
+	o := newOptions(opts)
 	return &UpsertEntitlementInteractor{
 		entitlementWriter: entitlementWriter,
-		clock:             clock,
-		uuidGenerator:     uuidGenerator,
-		logger:            logger,
+		clock:             o.clock,
+		uuidGenerator:     o.uuidGenerator,
+		logger:            o.logger,
 		peerProvider:      peerProvider,
 	}
 }

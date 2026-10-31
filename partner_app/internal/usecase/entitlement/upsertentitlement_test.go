@@ -41,7 +41,7 @@ func TestUpsertEntitlementUsesTokenIssuedAtAsLastUpdated(t *testing.T) {
 		Now: now,
 	}).Return(domain.Entitlement{Provider: "my_app"}, nil)
 
-	_, err := entitlement.NewUpsertEntitlementInteractor(writer, clock, uuids, nil, "my_app").Execute(context.Background(),
+	_, err := entitlement.NewUpsertEntitlementInteractor(writer, "my_app", entitlement.WithClock(clock), entitlement.WithUUIDGenerator(uuids)).Execute(context.Background(),
 		entitlement.UpsertEntitlementInput{Token: token("my_app"), SubjectID: "SUB1", EntitlementID: "ENT1", Products: "p", FreeTrial: "NONE"})
 
 	require.NoError(t, err)
@@ -50,7 +50,7 @@ func TestUpsertEntitlementUsesTokenIssuedAtAsLastUpdated(t *testing.T) {
 func TestUpsertEntitlementRejectsForeignProvider(t *testing.T) {
 	writer := repositorymocks.NewMockEntitlementWriter(t)
 
-	_, err := entitlement.NewUpsertEntitlementInteractor(writer, systemclockmocks.NewMockClock(t), systemclockmocks.NewMockUUIDGenerator(t), nil, "my_app").
+	_, err := entitlement.NewUpsertEntitlementInteractor(writer, "my_app", entitlement.WithClock(systemclockmocks.NewMockClock(t)), entitlement.WithUUIDGenerator(systemclockmocks.NewMockUUIDGenerator(t))).
 		Execute(context.Background(), entitlement.UpsertEntitlementInput{Token: token("someone_else"), SubjectID: "SUB1", EntitlementID: "ENT1", Products: "p"})
 
 	assert.ErrorIs(t, err, domain.TokenClaimInvalid("provider_not_allowed"))

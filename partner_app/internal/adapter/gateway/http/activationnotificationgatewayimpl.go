@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway"
 )
@@ -21,10 +20,8 @@ type ActivationNotificationClient struct {
 
 var _ gateway.ActivationNotificationSender = (*ActivationNotificationClient)(nil)
 
-func NewActivationNotificationClient(url string, client *http.Client) *ActivationNotificationClient {
-	if client == nil {
-		client = &http.Client{Timeout: 5 * time.Second}
-	}
+func NewActivationNotificationClient(url string, opts ...Option) *ActivationNotificationClient {
+	client := newOptions(opts).httpClient
 	return &ActivationNotificationClient{url: url, client: client}
 }
 

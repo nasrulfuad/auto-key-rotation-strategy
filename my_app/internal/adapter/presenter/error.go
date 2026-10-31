@@ -80,11 +80,8 @@ type ErrorPresenter struct {
 	logger logging.Logger
 }
 
-func NewErrorPresenter(logger logging.Logger) *ErrorPresenter {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
-	return &ErrorPresenter{logger: logger}
+func NewErrorPresenter(opts ...Option) *ErrorPresenter {
+	return &ErrorPresenter{logger: newOptions(opts).logger}
 }
 
 func (p *ErrorPresenter) Render(err error, ectx echo.Context) {

@@ -22,11 +22,8 @@ type Verifier struct {
 
 var _ TokenVerifier = (*Verifier)(nil)
 
-func NewVerifier(publicKeySource PublicKeySource, algorithm domain.SigningAlgorithm, logger logging.Logger) *Verifier {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
-	return &Verifier{publicKeySource: publicKeySource, algorithm: algorithm, logger: logger}
+func NewVerifier(publicKeySource PublicKeySource, algorithm domain.SigningAlgorithm, opts ...Option) *Verifier {
+	return &Verifier{publicKeySource: publicKeySource, algorithm: algorithm, logger: newOptions(opts).logger}
 }
 
 func (v *Verifier) Verify(ctx context.Context, raw string, expectation domain.TokenExpectation, now time.Time) (domain.VerifiedToken, error) {

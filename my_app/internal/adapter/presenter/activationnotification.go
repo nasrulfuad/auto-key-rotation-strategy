@@ -8,7 +8,7 @@ import (
 
 type ActivationNotificationPresenter struct{}
 
-func NewActivationNotificationPresenter() *ActivationNotificationPresenter {
+func NewActivationNotificationPresenter(opts ...Option) *ActivationNotificationPresenter {
 	return &ActivationNotificationPresenter{}
 }
 

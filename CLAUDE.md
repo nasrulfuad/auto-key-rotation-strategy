@@ -5,12 +5,13 @@
 3. **Clean architecture always.** domain (innermost, no framework/transport/db deps) -> usecase (application rules) -> adapter/infra (controllers, presenters, repositories, gateways, framework glue). Domain must not import net/http, database/sql, or framework code. Use cases depend only on interfaces, never on an implementation: repository interfaces live in `internal/adapter/repository`, gateway interfaces in `internal/adapter/gateway`, infrastructure interfaces in their infra package. Use cases never import the driving side (`adapter/controller`, `adapter/presenter`, `adapter/apidoc`, `infra/echo`, `infra/scheduler`, `infra/config`, `di`), nor `repository/postgres` or `gateway/http`. depguard enforces this.
 4. **No comments, except interface contracts and configuration.** Never write comments in code — not inline, not on functions, ordinary structs or their fields. Code must be self-explanatory through naming and structure alone. Two exceptions get Go doc comments that start with the name and keep a blank line between documented members:
    - Exported interface types and every method of those interfaces: state the contract a caller relies on (results, the domain errors returned, side effects such as transactions or caching). `// FindActive returns ...`
-   - Configuration structs (`config.Config`, `Options`, `Overrides`, `Audiences`, `SigningKeySchedule`) and every field: state what the value controls, its environment variable and default when it has one, and the constraint it must meet. `// TokenTTL is the lifetime ... TOKEN_TTL, default 5m.`
+   - Configuration structs (`config.Config`, the unexported `options` struct of every package, `Audiences`, `SigningKeySchedule`) and every field: state what the value controls, its environment variable and default when it has one, and the constraint it must meet. `// TokenTTL is the lifetime ... TOKEN_TTL, default 5m.`
 
    Nothing else gets a comment.
 5. **Naming standard.** Every new or renamed identifier in every layer follows the tables below. When existing code disagrees with these rules, the rules win: rename it as part of the change that touches it, never copy the old pattern.
 6. **No JSONB in the database, ever.** No JSONB columns, no `::JSONB` casts, no `jsonb_*` functions in queries, not even to pass a list of IDs or batch rows. Pass lists as typed arrays (`= ANY(sqlc.arg(ids)::UUID[])`, `unnest(...)`). Existing JSONB use is removed when the code around it is touched.
 7. **Interface and implementation files.** Interfaces never share a file with an implementation. The file that implements an interface carries the `impl` suffix after the interface file's name. Every implementation has a compile-time assertion (`var _ repository.SigningKeyReader = (*SigningKeyRepository)(nil)`); when that would make a package import its consumer, the assertion goes in a `<name>impl_test.go`. Generated code (sqlc `store/querier.go`) is exempt.
+8. **Functional options for constructors.** Every constructor takes its required dependencies and values as positional parameters and everything that has a sensible default as trailing `opts ...Option`. Each package declares one `type Option func(*options)`, an unexported `options` struct holding the defaults, `With<Name>` setters that ignore a nil dependency, and `newOptions(opts)` that applies them; every constructor of that package accepts `opts ...Option`. Never pass `nil` for an optional dependency and never add an `Options` / `Overrides` struct parameter. A package whose constructors have nothing optional (`sealer`, `systemclock`, `usecase/peersigningkey`) declares no `Option`. Each package tests its defaults and setters in `option_internal_test.go`.
 
 ## Naming standard
 
@@ -64,7 +65,7 @@
 
 | Topic | Rule | Example |
 |-------|------|---------|
-| `Repositories` / `Overrides` fields | Exactly the interface name. | `AccountReader repository.AccountReader` |
+| Container options | `di.With<Dependency>` for every dependency a test may replace; no `Overrides` struct. | `di.NewWithDB(cfg, db, di.WithClock(clock))` |
 | Local dependency variables | Interface name in camelCase. | `refreshTokenWriter` |
 | Use case variables | `<verb><Object>UC`. | `listAccountsUC`, `checkPublisherAliasUC` |
 
@@ -98,12 +99,23 @@
 
 | Topic | Rule | Example |
 |-------|------|---------|
-| Where | Exported interface types and each of their methods; configuration structs and each of their fields. Nowhere else: not on implementations, functions, ordinary structs, constants or tests. | `repository.SigningKeyReader`, `config.Config`, `jwks.Options` |
+| Where | Exported interface types and each of their methods; configuration structs, including each package's `options`, and each of their fields. Nowhere else: not on implementations, functions, ordinary structs, constants or tests. | `repository.SigningKeyReader`, `config.Config`, `jwks.Options` |
 | First word | The name of the documented type, method or field. | `// FindActive returns ...`, `// TokenTTL is ...` |
 | Interface method content | The contract: what it returns, which domain error it returns and when, and side effects (transaction, cache, lock, idempotency). Never restate the signature. | `// Create stores notification and reports whether it was new.` |
 | Configuration field content | What the value controls, then the environment variable and its default (or `required`), then the constraint it must meet. | `// TokenTTL is the lifetime of every token this app signs; it must not exceed KEY_INACTIVE_DURATION.` / `// TOKEN_TTL, default 5m.` |
 | Accuracy | Written from the implementation and the config loader, and updated in the same change that alters the behaviour, default or constraint. | — |
 | Layout | Full sentences, wrapped near 120 columns, one blank line between documented methods or fields. | — |
+
+### Functional options
+
+| Topic | Rule | Example |
+|-------|------|---------|
+| File | `option.go` in the package, holding `Option`, `options`, the `With<Name>` setters and `newOptions`. | `usecase/signingkey/option.go` |
+| Setters | `With<Name>`, the name of the dependency or value; nil dependencies are ignored so the default stays. | `WithClock`, `WithLogger`, `WithHTTPClient`, `WithRefreshMinimumInterval` |
+| Defaults | Set in `newOptions`; a default that needs a required argument takes it there. | `newOptions(db, opts)` defaults the querier to `store.New(db)` |
+| Use case defaults | `WithClock` → `systemclock.New()`, `WithUUIDGenerator` → `systemclock.NewUUIDGenerator()`, `WithLogger` → `logging.NopLogger{}`. | `signingkey.NewEnsureSigningKeysInteractor(reader, writer, generator, schedule, algorithm, signingkey.WithClock(clock))` |
+| Required values | Never options: interfaces without a default, configuration values without a default, audiences, providers. | `NewRotateSigningKeyInteractor(jobLock, reader, writer, generator, lockName, schedule, algorithm, ...)` |
+| Tests | `option_internal_test.go` covers the defaults, every setter and the nil case. | `TestNewOptionsIgnoresNilDependencies` |
 
 ### Controller and presenter
 

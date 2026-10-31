@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
@@ -17,8 +18,8 @@ var (
 	_ repository.ActivationNotificationWriter = (*ActivationNotificationRepository)(nil)
 )
 
-func NewActivationNotificationRepository(queries store.Querier) *ActivationNotificationRepository {
-	return &ActivationNotificationRepository{queries: queries}
+func NewActivationNotificationRepository(db *sql.DB, opts ...Option) *ActivationNotificationRepository {
+	return &ActivationNotificationRepository{queries: newOptions(db, opts).querier}
 }
 
 func (r *ActivationNotificationRepository) Create(ctx context.Context, notification domain.ActivationNotification) (bool, error) {

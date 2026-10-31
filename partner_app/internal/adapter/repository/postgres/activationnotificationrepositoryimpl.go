@@ -21,8 +21,8 @@ var (
 	_ repository.ActivationNotificationWriter = (*ActivationNotificationRepository)(nil)
 )
 
-func NewActivationNotificationRepository(queries store.Querier) *ActivationNotificationRepository {
-	return &ActivationNotificationRepository{queries: queries}
+func NewActivationNotificationRepository(db *sql.DB, opts ...Option) *ActivationNotificationRepository {
+	return &ActivationNotificationRepository{queries: newOptions(db, opts).querier}
 }
 
 func (r *ActivationNotificationRepository) ListAllDue(ctx context.Context, now time.Time, limit int) ([]domain.ActivationNotification, error) {

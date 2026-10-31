@@ -26,22 +26,18 @@ func NewEnsureSigningKeysInteractor(
 	signingKeyReader repository.SigningKeyReader,
 	signingKeyWriter repository.SigningKeyWriter,
 	keyPairGenerator rsakey.KeyPairGenerator,
-	clock systemclock.Clock,
-	uuidGenerator systemclock.UUIDGenerator,
-	logger logging.Logger,
 	schedule domain.SigningKeySchedule,
 	algorithm domain.SigningAlgorithm,
+	opts ...Option,
 ) *EnsureSigningKeysInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
+	o := newOptions(opts)
 	return &EnsureSigningKeysInteractor{
 		signingKeyReader: signingKeyReader,
 		signingKeyWriter: signingKeyWriter,
 		keyPairGenerator: keyPairGenerator,
-		clock:            clock,
-		uuidGenerator:    uuidGenerator,
-		logger:           logger,
+		clock:            o.clock,
+		uuidGenerator:    o.uuidGenerator,
+		logger:           o.logger,
 		schedule:         schedule,
 		algorithm:        algorithm,
 	}

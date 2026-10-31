@@ -33,22 +33,18 @@ func NewActivateSubscriptionInteractor(
 	partnerEntitlementGateway gateway.PartnerEntitlementGateway,
 	subscriptionWriter repository.SubscriptionWriter,
 	tokenSigner TokenSigner,
-	clock systemclock.Clock,
-	uuidGenerator systemclock.UUIDGenerator,
-	logger logging.Logger,
 	audience domain.TokenAudience,
 	provider string,
+	opts ...Option,
 ) *ActivateSubscriptionInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
+	o := newOptions(opts)
 	return &ActivateSubscriptionInteractor{
 		partnerEntitlementGateway: partnerEntitlementGateway,
 		subscriptionWriter:        subscriptionWriter,
 		tokenSigner:               tokenSigner,
-		clock:                     clock,
-		uuidGenerator:             uuidGenerator,
-		logger:                    logger,
+		clock:                     o.clock,
+		uuidGenerator:             o.uuidGenerator,
+		logger:                    o.logger,
 		audience:                  audience,
 		provider:                  provider,
 	}

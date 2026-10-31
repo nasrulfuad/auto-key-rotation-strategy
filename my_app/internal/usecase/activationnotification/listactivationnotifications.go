@@ -13,7 +13,7 @@ type ListActivationNotificationsInteractor struct {
 	activationNotificationReader repository.ActivationNotificationReader
 }
 
-func NewListActivationNotificationsInteractor(activationNotificationReader repository.ActivationNotificationReader) *ListActivationNotificationsInteractor {
+func NewListActivationNotificationsInteractor(activationNotificationReader repository.ActivationNotificationReader, opts ...Option) *ListActivationNotificationsInteractor {
 	return &ListActivationNotificationsInteractor{activationNotificationReader: activationNotificationReader}
 }
 

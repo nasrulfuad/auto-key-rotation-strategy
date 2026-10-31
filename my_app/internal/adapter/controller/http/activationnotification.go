@@ -21,6 +21,7 @@ func NewActivationNotificationController(
 	receiveActivationNotification *activationnotification.ReceiveActivationNotificationInteractor,
 	listActivationNotifications *activationnotification.ListActivationNotificationsInteractor,
 	activationNotificationPresenter *presenter.ActivationNotificationPresenter,
+	opts ...Option,
 ) *ActivationNotificationController {
 	return &ActivationNotificationController{
 		receiveActivationNotification: receiveActivationNotification,

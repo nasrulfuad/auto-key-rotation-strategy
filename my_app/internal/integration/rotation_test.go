@@ -18,12 +18,8 @@ import (
 const probeAudience domain.TokenAudience = "rotation.probe"
 
 func newSelfVerifier(a *app, refreshOnUnknownKeyID bool) (*jwt.Verifier, *jwks.RemoteKeySet) {
-	keySet := jwks.NewRemoteKeySet(jwks.Options{
-		URL:                    a.jwksURL(),
-		RefreshOnUnknownKeyID:  refreshOnUnknownKeyID,
-		RefreshMinimumInterval: 10 * time.Second,
-	}, a.clock, nil)
-	return jwt.NewVerifier(keySet, domain.SigningAlgorithmRS256, nil), keySet
+	keySet := jwks.NewRemoteKeySet(a.jwksURL(), jwks.WithRefreshOnUnknownKeyID(refreshOnUnknownKeyID), jwks.WithRefreshMinimumInterval(10*time.Second), jwks.WithClock(a.clock))
+	return jwt.NewVerifier(keySet, domain.SigningAlgorithmRS256), keySet
 }
 
 type issuedToken struct {

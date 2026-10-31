@@ -49,8 +49,8 @@ func NewRouter(
 	peerSigningKey *PeerSigningKeyController,
 	entitlement *EntitlementController,
 	peerAuthMiddleware *PeerAuthMiddleware,
-	docs *DocsController,
 	audiences Audiences,
+	opts ...Option,
 ) *Router {
 	return &Router{
 		health:             health,
@@ -58,7 +58,7 @@ func NewRouter(
 		peerSigningKey:     peerSigningKey,
 		entitlement:        entitlement,
 		peerAuthMiddleware: peerAuthMiddleware,
-		docs:               docs,
+		docs:               newOptions(opts).docs,
 		audiences:          audiences,
 	}
 }

@@ -23,16 +23,16 @@ type Signer struct {
 func NewSigner(
 	signingKeyReader repository.SigningKeyReader,
 	tokenIssuer jwt.TokenIssuer,
-	clock systemclock.Clock,
-	uuidGenerator systemclock.UUIDGenerator,
 	issuer string,
 	tokenTTL time.Duration,
+	opts ...Option,
 ) *Signer {
+	o := newOptions(opts)
 	return &Signer{
 		signingKeyReader: signingKeyReader,
 		tokenIssuer:      tokenIssuer,
-		clock:            clock,
-		uuidGenerator:    uuidGenerator,
+		clock:            o.clock,
+		uuidGenerator:    o.uuidGenerator,
 		issuer:           issuer,
 		tokenTTL:         tokenTTL,
 	}

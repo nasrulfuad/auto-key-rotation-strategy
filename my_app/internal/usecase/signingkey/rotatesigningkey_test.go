@@ -43,8 +43,18 @@ func newRotateFixture(t *testing.T) rotateFixture {
 		uuids:     systemclockmocks.NewMockUUIDGenerator(t),
 		logger:    loggingmocks.NewMockLogger(t),
 	}
-	f.uc = signingkey.NewRotateSigningKeyInteractor(f.jobLock, f.reader, f.writer, f.generator, f.clock, f.uuids, f.logger,
-		rotationLockName, schedule, domain.SigningAlgorithmRS256)
+	f.uc = signingkey.NewRotateSigningKeyInteractor(
+		f.jobLock,
+		f.reader,
+		f.writer,
+		f.generator,
+		rotationLockName,
+		schedule,
+		domain.SigningAlgorithmRS256,
+		signingkey.WithClock(f.clock),
+		signingkey.WithUUIDGenerator(f.uuids),
+		signingkey.WithLogger(f.logger),
+	)
 	return f
 }
 

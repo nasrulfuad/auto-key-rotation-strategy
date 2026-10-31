@@ -15,16 +15,14 @@ type SlogLogger struct {
 
 var _ Logger = SlogLogger{}
 
-func New(handler slog.Handler) SlogLogger {
-	if handler == nil {
-		handler = slog.Default().Handler()
-	}
-	return SlogLogger{handler: handler}
+func New(opts ...Option) SlogLogger {
+	return SlogLogger{handler: newOptions(opts).handler}
 }
 
-func NewJSON(writer io.Writer, level string, service string) SlogLogger {
-	handler := slog.NewJSONHandler(writer, &slog.HandlerOptions{Level: parseLevel(level)})
-	return New(handler.WithAttrs([]slog.Attr{slog.String("service", service)}))
+func NewJSON(writer io.Writer, opts ...Option) SlogLogger {
+	o := newOptions(opts)
+	handler := slog.NewJSONHandler(writer, &slog.HandlerOptions{Level: parseLevel(o.level)})
+	return New(WithHandler(handler.WithAttrs([]slog.Attr{slog.String("service", o.service)})))
 }
 
 func parseLevel(level string) slog.Level {

@@ -23,8 +23,8 @@ var (
 	_ repository.SigningKeyWriter = (*SigningKeyRepository)(nil)
 )
 
-func NewSigningKeyRepository(db *sql.DB, queries store.Querier, privateKeySealer sealer.PrivateKeySealer) *SigningKeyRepository {
-	return &SigningKeyRepository{db: db, queries: queries, privateKeySealer: privateKeySealer}
+func NewSigningKeyRepository(db *sql.DB, privateKeySealer sealer.PrivateKeySealer, opts ...Option) *SigningKeyRepository {
+	return &SigningKeyRepository{db: db, queries: newOptions(db, opts).querier, privateKeySealer: privateKeySealer}
 }
 
 func (r *SigningKeyRepository) Create(ctx context.Context, in repository.SigningKeyCreate) (domain.SigningKey, error) {

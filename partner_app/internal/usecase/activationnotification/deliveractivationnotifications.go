@@ -28,22 +28,19 @@ func NewDeliverActivationNotificationsInteractor(
 	activationNotificationWriter repository.ActivationNotificationWriter,
 	activationNotificationSender gateway.ActivationNotificationSender,
 	tokenSigner TokenSigner,
-	clock systemclock.Clock,
-	logger logging.Logger,
 	audience domain.TokenAudience,
 	batchSize int,
 	maximumAttempts int,
+	opts ...Option,
 ) *DeliverActivationNotificationsInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
+	o := newOptions(opts)
 	return &DeliverActivationNotificationsInteractor{
 		activationNotificationReader: activationNotificationReader,
 		activationNotificationWriter: activationNotificationWriter,
 		activationNotificationSender: activationNotificationSender,
 		tokenSigner:                  tokenSigner,
-		clock:                        clock,
-		logger:                       logger,
+		clock:                        o.clock,
+		logger:                       o.logger,
 		audience:                     audience,
 		batchSize:                    batchSize,
 		maximumAttempts:              maximumAttempts,

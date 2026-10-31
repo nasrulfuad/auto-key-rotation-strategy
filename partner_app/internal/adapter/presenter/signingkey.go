@@ -10,7 +10,7 @@ import (
 
 type SigningKeyPresenter struct{}
 
-func NewSigningKeyPresenter() *SigningKeyPresenter { return &SigningKeyPresenter{} }
+func NewSigningKeyPresenter(opts ...Option) *SigningKeyPresenter { return &SigningKeyPresenter{} }
 
 type jsonWebKeySetBody struct {
 	Keys []jsonWebKeyBody `json:"keys"`

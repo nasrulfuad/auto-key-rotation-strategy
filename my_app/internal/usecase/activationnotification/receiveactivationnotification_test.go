@@ -29,7 +29,7 @@ func TestReceiveActivationNotificationStoresSigningKeyID(t *testing.T) {
 		SubjectID: "SUB1", EntitlementID: "ENT1", Products: "p", FreeTrial: domain.FreeTrialStatusNone, ReceivedAt: now,
 	}).Return(false, nil)
 
-	err := activationnotification.NewReceiveActivationNotificationInteractor(writer, clock, uuids, nil).Execute(context.Background(),
+	err := activationnotification.NewReceiveActivationNotificationInteractor(writer, activationnotification.WithClock(clock), activationnotification.WithUUIDGenerator(uuids)).Execute(context.Background(),
 		activationnotification.ReceiveActivationNotificationInput{
 			Token: domain.VerifiedToken{KeyID: "partner-kid", Claims: domain.TokenClaims{
 				Issuer: "qa.partner-app.local", Subject: "SUB1", Provider: "my_app",

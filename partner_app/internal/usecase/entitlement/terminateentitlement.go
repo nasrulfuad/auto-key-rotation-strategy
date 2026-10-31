@@ -26,19 +26,15 @@ type TerminateEntitlementInteractor struct {
 
 func NewTerminateEntitlementInteractor(
 	entitlementWriter repository.EntitlementWriter,
-	clock systemclock.Clock,
-	uuidGenerator systemclock.UUIDGenerator,
-	logger logging.Logger,
 	peerProvider string,
+	opts ...Option,
 ) *TerminateEntitlementInteractor {
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
+	o := newOptions(opts)
 	return &TerminateEntitlementInteractor{
 		entitlementWriter: entitlementWriter,
-		clock:             clock,
-		uuidGenerator:     uuidGenerator,
-		logger:            logger,
+		clock:             o.clock,
+		uuidGenerator:     o.uuidGenerator,
+		logger:            o.logger,
 		peerProvider:      peerProvider,
 	}
 }

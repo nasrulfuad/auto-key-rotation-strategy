@@ -21,8 +21,8 @@ var (
 	_ repository.EntitlementWriter = (*EntitlementRepository)(nil)
 )
 
-func NewEntitlementRepository(db *sql.DB, queries store.Querier) *EntitlementRepository {
-	return &EntitlementRepository{db: db, queries: queries}
+func NewEntitlementRepository(db *sql.DB, opts ...Option) *EntitlementRepository {
+	return &EntitlementRepository{db: db, queries: newOptions(db, opts).querier}
 }
 
 func (r *EntitlementRepository) Upsert(ctx context.Context, in repository.EntitlementUpsert) (domain.Entitlement, error) {

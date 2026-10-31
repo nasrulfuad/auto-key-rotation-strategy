@@ -13,7 +13,7 @@ type ListSubscriptionsInteractor struct {
 	subscriptionReader repository.SubscriptionReader
 }
 
-func NewListSubscriptionsInteractor(subscriptionReader repository.SubscriptionReader) *ListSubscriptionsInteractor {
+func NewListSubscriptionsInteractor(subscriptionReader repository.SubscriptionReader, opts ...Option) *ListSubscriptionsInteractor {
 	return &ListSubscriptionsInteractor{subscriptionReader: subscriptionReader}
 }
 

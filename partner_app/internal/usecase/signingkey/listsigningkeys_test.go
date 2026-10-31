@@ -22,7 +22,7 @@ func TestListSigningKeysReturnsEveryKeyWithTheInstantItWasListedAt(t *testing.T)
 	clock.EXPECT().Now().Return(now)
 	reader.EXPECT().ListAll(mock.Anything).Return(keys, nil)
 
-	out, err := signingkey.NewListSigningKeysInteractor(reader, clock).Execute(context.Background())
+	out, err := signingkey.NewListSigningKeysInteractor(reader, signingkey.WithClock(clock)).Execute(context.Background())
 
 	require.NoError(t, err)
 	assert.Equal(t, signingkey.ListSigningKeysOutput{Now: now, Keys: keys}, out)
@@ -35,7 +35,7 @@ func TestListSigningKeysReturnsReaderError(t *testing.T) {
 	clock.EXPECT().Now().Return(now)
 	reader.EXPECT().ListAll(mock.Anything).Return(nil, readErr)
 
-	_, err := signingkey.NewListSigningKeysInteractor(reader, clock).Execute(context.Background())
+	_, err := signingkey.NewListSigningKeysInteractor(reader, signingkey.WithClock(clock)).Execute(context.Background())
 
 	require.ErrorIs(t, err, readErr)
 }

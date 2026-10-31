@@ -14,7 +14,7 @@ type Issuer struct {
 
 var _ TokenIssuer = (*Issuer)(nil)
 
-func NewIssuer(signingKeyReader repository.SigningKeyReader) *Issuer {
+func NewIssuer(signingKeyReader repository.SigningKeyReader, opts ...Option) *Issuer {
 	return &Issuer{signingKeyReader: signingKeyReader}
 }
 

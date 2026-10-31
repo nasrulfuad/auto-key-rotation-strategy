@@ -8,7 +8,7 @@ import (
 
 type EntitlementPresenter struct{}
 
-func NewEntitlementPresenter() *EntitlementPresenter { return &EntitlementPresenter{} }
+func NewEntitlementPresenter(opts ...Option) *EntitlementPresenter { return &EntitlementPresenter{} }
 
 type entitlementBody struct {
 	Provider      string     `json:"provider"`

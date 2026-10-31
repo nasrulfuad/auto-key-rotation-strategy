@@ -24,7 +24,7 @@ func TestThumbprintMatchesRFC7638Example(t *testing.T) {
 }
 
 func TestGeneratorProducesDistinctKeyIDsAndParsablePrivateKeys(t *testing.T) {
-	generator, err := rsakey.NewGenerator(2048)
+	generator, err := rsakey.NewGenerator(rsakey.WithBits(2048))
 	require.NoError(t, err)
 
 	first, err := generator.Generate(context.Background(), domain.SigningAlgorithmRS256)
@@ -42,6 +42,6 @@ func TestGeneratorProducesDistinctKeyIDsAndParsablePrivateKeys(t *testing.T) {
 }
 
 func TestNewGeneratorRejectsWeakKeys(t *testing.T) {
-	_, err := rsakey.NewGenerator(1024)
+	_, err := rsakey.NewGenerator(rsakey.WithBits(1024))
 	assert.Error(t, err)
 }

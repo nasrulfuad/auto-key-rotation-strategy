@@ -30,7 +30,7 @@ func TestAuthenticatePeerRequestVerifiesTokenAgainstPeerIssuerAudienceAndLeeway(
 		Leeway:   30 * time.Second,
 	}, verifiedAt).Return(verified, nil)
 
-	result, err := authentication.NewAuthenticatePeerRequestInteractor(verifier, clock, peerIssuer, 30*time.Second).Execute(context.Background(),
+	result, err := authentication.NewAuthenticatePeerRequestInteractor(verifier, peerIssuer, 30*time.Second, authentication.WithClock(clock)).Execute(context.Background(),
 		authentication.AuthenticatePeerRequestInput{RawToken: "raw.jwt.token", Audience: "activation-notification"})
 
 	require.NoError(t, err)
@@ -38,7 +38,7 @@ func TestAuthenticatePeerRequestVerifiesTokenAgainstPeerIssuerAudienceAndLeeway(
 }
 
 func TestAuthenticatePeerRequestRejectsMissingTokenWithoutVerifying(t *testing.T) {
-	uc := authentication.NewAuthenticatePeerRequestInteractor(jwtmocks.NewMockTokenVerifier(t), systemclockmocks.NewMockClock(t), peerIssuer, time.Second)
+	uc := authentication.NewAuthenticatePeerRequestInteractor(jwtmocks.NewMockTokenVerifier(t), peerIssuer, time.Second, authentication.WithClock(systemclockmocks.NewMockClock(t)))
 
 	_, err := uc.Execute(context.Background(), authentication.AuthenticatePeerRequestInput{Audience: "activation-notification"})
 
@@ -52,7 +52,7 @@ func TestAuthenticatePeerRequestReturnsVerifierRejection(t *testing.T) {
 	verifier.EXPECT().Verify(mock.Anything, "raw.jwt.token", mock.Anything, verifiedAt).
 		Return(domain.VerifiedToken{}, domain.ErrTokenSigningKeyNotFound)
 
-	_, err := authentication.NewAuthenticatePeerRequestInteractor(verifier, clock, peerIssuer, time.Second).Execute(context.Background(),
+	_, err := authentication.NewAuthenticatePeerRequestInteractor(verifier, peerIssuer, time.Second, authentication.WithClock(clock)).Execute(context.Background(),
 		authentication.AuthenticatePeerRequestInput{RawToken: "raw.jwt.token", Audience: "activation-notification"})
 
 	require.ErrorIs(t, err, domain.ErrTokenSigningKeyNotFound)

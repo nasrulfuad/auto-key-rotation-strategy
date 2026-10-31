@@ -2,7 +2,7 @@ package presenter
 
 type HealthPresenter struct{}
 
-func NewHealthPresenter() *HealthPresenter { return &HealthPresenter{} }
+func NewHealthPresenter(opts ...Option) *HealthPresenter { return &HealthPresenter{} }
 
 type healthBody struct {
 	Status string `json:"status"`

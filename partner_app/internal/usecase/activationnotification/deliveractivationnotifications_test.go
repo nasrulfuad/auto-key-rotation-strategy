@@ -65,8 +65,17 @@ func TestDeliverActivationNotificationsMarksSentAndSchedulesRetry(t *testing.T) 
 		append(deliveryFields(failing), "attempts", 2, "status", domain.ActivationNotificationStatusPending, "error", errors.New("status 401"),
 			"next_attempt_at", now.Add(10*time.Second))).Return().Once()
 
-	err := activationnotification.NewDeliverActivationNotificationsInteractor(reader, writer, sender, stubSigner{}, clock, logger,
-		"activation-notification.my-app.local", 10, 5).Execute(context.Background())
+	err := activationnotification.NewDeliverActivationNotificationsInteractor(
+		reader,
+		writer,
+		sender,
+		stubSigner{},
+		"activation-notification.my-app.local",
+		10,
+		5,
+		activationnotification.WithClock(clock),
+		activationnotification.WithLogger(logger),
+	).Execute(context.Background())
 
 	require.NoError(t, err)
 }
@@ -91,8 +100,17 @@ func TestDeliverActivationNotificationsGivesUpAfterMaximumAttempts(t *testing.T)
 		"activation notification delivery failed; maximum attempts reached, giving up and marking the notification failed",
 		append(deliveryFields(exhausted), "attempts", 5, "status", domain.ActivationNotificationStatusFailed, "error", sendErr)).Return().Once()
 
-	err := activationnotification.NewDeliverActivationNotificationsInteractor(reader, writer, sender, stubSigner{}, clock, logger,
-		"activation-notification.my-app.local", 10, 5).Execute(context.Background())
+	err := activationnotification.NewDeliverActivationNotificationsInteractor(
+		reader,
+		writer,
+		sender,
+		stubSigner{},
+		"activation-notification.my-app.local",
+		10,
+		5,
+		activationnotification.WithClock(clock),
+		activationnotification.WithLogger(logger),
+	).Execute(context.Background())
 
 	require.NoError(t, err)
 }

@@ -103,8 +103,8 @@ func TestActivationAndTerminationAreSignedWithTheActiveKeyAcrossRotation(t *test
 		"PARTNER_BASE_URL": partner.server.URL,
 		"PEER_JWKS_URL":    partner.server.URL + "/.well-known/jwks.json",
 	})
-	keySet := jwks.NewRemoteKeySet(jwks.Options{URL: a.jwksURL(), RefreshOnUnknownKeyID: true, RefreshMinimumInterval: 10 * time.Second}, a.clock, nil)
-	verifier := jwt.NewVerifier(keySet, domain.SigningAlgorithmRS256, nil)
+	keySet := jwks.NewRemoteKeySet(a.jwksURL(), jwks.WithRefreshOnUnknownKeyID(true), jwks.WithRefreshMinimumInterval(10*time.Second), jwks.WithClock(a.clock))
+	verifier := jwt.NewVerifier(keySet, domain.SigningAlgorithmRS256)
 	partner.verify = func(token string, audience domain.TokenAudience) error {
 		_, err := verifier.Verify(context.Background(), token, domain.TokenExpectation{Issuer: "qa.my-app.local", Audience: audience}, a.clock.Now())
 		return err

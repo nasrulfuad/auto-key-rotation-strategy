@@ -43,7 +43,7 @@ func newEnsureFixture(t *testing.T) ensureFixture {
 		uuids:     systemclockmocks.NewMockUUIDGenerator(t),
 		logger:    loggingmocks.NewMockLogger(t),
 	}
-	f.uc = signingkey.NewEnsureSigningKeysInteractor(f.reader, f.writer, f.generator, f.clock, f.uuids, f.logger, schedule, domain.SigningAlgorithmRS256)
+	f.uc = signingkey.NewEnsureSigningKeysInteractor(f.reader, f.writer, f.generator, schedule, domain.SigningAlgorithmRS256, signingkey.WithClock(f.clock), signingkey.WithUUIDGenerator(f.uuids), signingkey.WithLogger(f.logger))
 	f.clock.EXPECT().Now().Return(now)
 	return f
 }
@@ -139,7 +139,7 @@ func TestDeleteExpiredSigningKeysLogsEveryDeletedKey(t *testing.T) {
 			[]any{"kid", keyID, "deleted_at", now}).Return().Once()
 	}
 
-	err := signingkey.NewDeleteExpiredSigningKeysInteractor(writer, clock, logger).Execute(context.Background())
+	err := signingkey.NewDeleteExpiredSigningKeysInteractor(writer, signingkey.WithClock(clock), signingkey.WithLogger(logger)).Execute(context.Background())
 
 	assert.NoError(t, err)
 }
@@ -161,7 +161,7 @@ func TestSignerUsesActiveKeyAndTruncatesIssuedAt(t *testing.T) {
 	}
 	issuer.EXPECT().Issue(mock.Anything, wantClaims, key).Return("token", nil)
 
-	signed, err := signingkey.NewSigner(reader, issuer, clock, uuids, "qa.partner-app.local", 5*time.Minute).
+	signed, err := signingkey.NewSigner(reader, issuer, "qa.partner-app.local", 5*time.Minute, signingkey.WithClock(clock), signingkey.WithUUIDGenerator(uuids)).
 		Sign(context.Background(), domain.TokenRequest{Audience: "aud", Subject: "SUB1", Provider: "my_app"})
 
 	require.NoError(t, err)

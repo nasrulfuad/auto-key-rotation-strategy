@@ -15,7 +15,7 @@ type HealthController struct {
 	presenter     *presenter.HealthPresenter
 }
 
-func NewHealthController(databaseProbe repository.DatabaseProbe, healthPresenter *presenter.HealthPresenter) *HealthController {
+func NewHealthController(databaseProbe repository.DatabaseProbe, healthPresenter *presenter.HealthPresenter, opts ...Option) *HealthController {
 	return &HealthController{databaseProbe: databaseProbe, presenter: healthPresenter}
 }
 

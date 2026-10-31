@@ -20,8 +20,9 @@ import (
 
 func TestServerTagsRequestContextAndResponseWithLogID(t *testing.T) {
 	var buffer bytes.Buffer
-	server := echoserver.New(echoserver.Options{RequestTimeout: time.Second, Logger: logging.NewJSON(&buffer, "debug", "test")}, controller.NewRouter(nil, nil, nil, nil, nil, nil, nil, controller.Audiences{ActivationNotification: "activation-notification.my-app.local"}),
-		presenter.NewErrorPresenter(nil))
+	server := echoserver.New(controller.NewRouter(nil, nil, nil, nil, nil, nil, controller.Audiences{ActivationNotification: "activation-notification.my-app.local"}),
+		presenter.NewErrorPresenter(),
+		echoserver.WithRequestTimeout(time.Second), echoserver.WithLogger(logging.NewJSON(&buffer, logging.WithLevel("debug"), logging.WithService("test"))))
 	var fields []any
 	server.GET("/probe", func(ectx echo.Context) error {
 		fields = logging.ListContextFields(ectx.Request().Context())

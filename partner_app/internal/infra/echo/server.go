@@ -20,32 +20,21 @@ const (
 	HeaderLogID        = "X-Log-ID"
 )
 
-// Options configure the HTTP server.
-type Options struct {
-	// RequestTimeout is the read timeout of the server and the context timeout of every handler.
-	RequestTimeout time.Duration
-
-	// Logger receives the request log lines; nil discards them.
-	Logger logging.Logger
-}
-
-func New(o Options, router *controller.Router, errorPresenter *presenter.ErrorPresenter) *echo.Echo {
-	logger := o.Logger
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
+func New(router *controller.Router, errorPresenter *presenter.ErrorPresenter, opts ...Option) *echo.Echo {
+	o := newOptions(opts)
+	logger := o.logger
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
 	e.HTTPErrorHandler = errorPresenter.Render
 	e.Server.ReadHeaderTimeout = readHeaderTimeout
-	e.Server.ReadTimeout = o.RequestTimeout
+	e.Server.ReadTimeout = o.requestTimeout
 	e.Server.IdleTimeout = idleTimeout
 
 	e.Use(logRequest(logger))
 	e.Use(middleware.Recover())
 	e.Use(middleware.BodyLimit(maximumRequestBody))
-	e.Use(middleware.ContextTimeout(o.RequestTimeout))
+	e.Use(middleware.ContextTimeout(o.requestTimeout))
 
 	router.Mount(e, router.Table())
 	return e

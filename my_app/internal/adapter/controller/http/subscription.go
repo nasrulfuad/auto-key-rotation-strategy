@@ -22,6 +22,7 @@ func NewSubscriptionController(
 	terminateSubscription *subscription.TerminateSubscriptionInteractor,
 	listSubscriptions *subscription.ListSubscriptionsInteractor,
 	subscriptionPresenter *presenter.SubscriptionPresenter,
+	opts ...Option,
 ) *SubscriptionController {
 	return &SubscriptionController{
 		activateSubscription:  activateSubscription,

@@ -29,7 +29,7 @@ func TestTerminateEntitlementUsesTokenIssuedAtAndQueuesNotification(t *testing.T
 		Now:                      now,
 	}).Return(domain.Entitlement{Status: domain.EntitlementStatusTerminated}, nil)
 
-	result, err := entitlement.NewTerminateEntitlementInteractor(writer, clock, uuids, nil, "my_app").Execute(context.Background(),
+	result, err := entitlement.NewTerminateEntitlementInteractor(writer, "my_app", entitlement.WithClock(clock), entitlement.WithUUIDGenerator(uuids)).Execute(context.Background(),
 		entitlement.TerminateEntitlementInput{Token: token("my_app"), SubjectID: "SUB1", EntitlementID: "ENT1"})
 
 	require.NoError(t, err)
@@ -37,7 +37,7 @@ func TestTerminateEntitlementUsesTokenIssuedAtAndQueuesNotification(t *testing.T
 }
 
 func TestTerminateEntitlementRejectsForeignProviderAndInvalidIDs(t *testing.T) {
-	uc := entitlement.NewTerminateEntitlementInteractor(repositorymocks.NewMockEntitlementWriter(t), systemclockmocks.NewMockClock(t), systemclockmocks.NewMockUUIDGenerator(t), nil, "my_app")
+	uc := entitlement.NewTerminateEntitlementInteractor(repositorymocks.NewMockEntitlementWriter(t), "my_app", entitlement.WithClock(systemclockmocks.NewMockClock(t)), entitlement.WithUUIDGenerator(systemclockmocks.NewMockUUIDGenerator(t)))
 
 	_, err := uc.Execute(context.Background(), entitlement.TerminateEntitlementInput{Token: token("other"), SubjectID: "SUB1", EntitlementID: "ENT1"})
 	assert.ErrorIs(t, err, domain.TokenClaimInvalid("provider_not_allowed"))

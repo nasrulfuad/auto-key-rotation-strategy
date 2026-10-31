@@ -18,7 +18,11 @@ type ListEntitlementsInteractor struct {
 	peerProvider string
 }
 
-func NewListEntitlementsInteractor(entitlementReader repository.EntitlementReader, peerProvider string) *ListEntitlementsInteractor {
+func NewListEntitlementsInteractor(
+	entitlementReader repository.EntitlementReader,
+	peerProvider string,
+	opts ...Option,
+) *ListEntitlementsInteractor {
 	return &ListEntitlementsInteractor{entitlementReader: entitlementReader, peerProvider: peerProvider}
 }
 

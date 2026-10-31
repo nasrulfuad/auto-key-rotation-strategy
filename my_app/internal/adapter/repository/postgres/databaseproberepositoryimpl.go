@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
 	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
@@ -14,8 +15,8 @@ type DatabaseProbeRepository struct {
 
 var _ repository.DatabaseProbe = (*DatabaseProbeRepository)(nil)
 
-func NewDatabaseProbeRepository(queries store.Querier) *DatabaseProbeRepository {
-	return &DatabaseProbeRepository{queries: queries}
+func NewDatabaseProbeRepository(db *sql.DB, opts ...Option) *DatabaseProbeRepository {
+	return &DatabaseProbeRepository{queries: newOptions(db, opts).querier}
 }
 
 func (r *DatabaseProbeRepository) Ping(ctx context.Context) error {

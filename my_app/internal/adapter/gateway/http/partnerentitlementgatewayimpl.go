@@ -24,10 +24,8 @@ type PartnerEntitlementClient struct {
 
 var _ gateway.PartnerEntitlementGateway = (*PartnerEntitlementClient)(nil)
 
-func NewPartnerEntitlementClient(baseURL string, client *http.Client) *PartnerEntitlementClient {
-	if client == nil {
-		client = &http.Client{Timeout: 5 * time.Second}
-	}
+func NewPartnerEntitlementClient(baseURL string, opts ...Option) *PartnerEntitlementClient {
+	client := newOptions(opts).httpClient
 	return &PartnerEntitlementClient{baseURL: strings.TrimRight(baseURL, "/"), client: client}
 }
 

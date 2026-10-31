@@ -28,28 +28,14 @@ const (
 var ErrKeyNotFound = errors.New("signing key not found in the peer key set")
 
 // Options configure a RemoteKeySet.
-type Options struct {
-	// URL is the peer JWKS endpoint.
-	URL string
-
-	// Client fetches the JWKS; nil uses an http.Client with a 5s timeout.
-	Client *http.Client
-
-	// RefreshOnUnknownKeyID makes FindPublicKey refresh the key set when keyID is not cached.
-	RefreshOnUnknownKeyID bool
-
-	// RefreshMinimumInterval is the minimum time between two refreshes triggered by an unknown key ID;
-	// after a failed refresh the next one is allowed after at most one second.
-	RefreshMinimumInterval time.Duration
-}
-
 type peerKey struct {
 	signingKey domain.PeerSigningKey
 	publicKey  *rsa.PublicKey
 }
 
 type RemoteKeySet struct {
-	options Options
+	url     string
+	options options
 	clock   systemclock.Clock
 	logger  logging.Logger
 	group   singleflight.Group
@@ -63,24 +49,19 @@ type RemoteKeySet struct {
 
 var _ PeerKeySet = (*RemoteKeySet)(nil)
 
-func NewRemoteKeySet(options Options, clock systemclock.Clock, logger logging.Logger) *RemoteKeySet {
-	if options.Client == nil {
-		options.Client = &http.Client{Timeout: 5 * time.Second}
-	}
-	if logger == nil {
-		logger = logging.NopLogger{}
-	}
-	return &RemoteKeySet{options: options, clock: clock, logger: logger, keys: map[string]peerKey{}}
+func NewRemoteKeySet(url string, opts ...Option) *RemoteKeySet {
+	o := newOptions(opts)
+	return &RemoteKeySet{url: url, options: o, clock: o.clock, logger: o.logger, keys: map[string]peerKey{}}
 }
 
 func (s *RemoteKeySet) FindPublicKey(ctx context.Context, keyID string) (*rsa.PublicKey, error) {
 	if key, found := s.lookup(keyID); found {
 		return key, nil
 	}
-	if !s.options.RefreshOnUnknownKeyID || !s.refreshAllowed() {
+	if !s.options.refreshOnUnknownKeyID || !s.refreshAllowed() {
 		return nil, ErrKeyNotFound
 	}
-	s.logger.Info(ctx, "unknown peer kid; refreshing peer key set", "kid", keyID, "url", s.options.URL)
+	s.logger.Info(ctx, "unknown peer kid; refreshing peer key set", "kid", keyID, "url", s.url)
 	if err := s.Refresh(ctx); err != nil {
 		return nil, err
 	}
@@ -120,7 +101,7 @@ func (s *RemoteKeySet) Status() domain.PeerKeySetStatus {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return domain.PeerKeySetStatus{
-		URL:           s.options.URL,
+		URL:           s.url,
 		LastFetchedAt: s.lastFetchedAt,
 		LastAttemptAt: s.lastAttemptAt,
 		LastError:     s.lastError,
@@ -145,7 +126,7 @@ func (s *RemoteKeySet) refresh(ctx context.Context) error {
 		s.mu.Lock()
 		s.lastError = err.Error()
 		s.mu.Unlock()
-		s.logger.Warn(ctx, "failed to refresh peer key set; keeping the cached keys", "url", s.options.URL, "error", err)
+		s.logger.Warn(ctx, "failed to refresh peer key set; keeping the cached keys", "url", s.url, "error", err)
 		return err
 	}
 
@@ -167,12 +148,12 @@ func (s *RemoteKeySet) refresh(ctx context.Context) error {
 
 	for keyID := range next {
 		if _, found := previous[keyID]; !found {
-			s.logger.Info(ctx, "peer signing key discovered in the peer JWKS; tokens signed by it are now accepted", "kid", keyID, "url", s.options.URL, "peer_key_count", len(next))
+			s.logger.Info(ctx, "peer signing key discovered in the peer JWKS; tokens signed by it are now accepted", "kid", keyID, "url", s.url, "peer_key_count", len(next))
 		}
 	}
 	for keyID := range previous {
 		if _, found := next[keyID]; !found {
-			s.logger.Info(ctx, "peer signing key removed from the peer JWKS; tokens signed by it are now rejected", "kid", keyID, "url", s.options.URL, "peer_key_count", len(next))
+			s.logger.Info(ctx, "peer signing key removed from the peer JWKS; tokens signed by it are now rejected", "kid", keyID, "url", s.url, "peer_key_count", len(next))
 		}
 	}
 	return nil
@@ -192,12 +173,12 @@ type keyDocument struct {
 }
 
 func (s *RemoteKeySet) fetch(ctx context.Context) (map[string]peerKey, error) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, s.options.URL, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, s.url, nil)
 	if err != nil {
 		return nil, err
 	}
 	request.Header.Set("Accept", "application/json")
-	response, err := s.options.Client.Do(request)
+	response, err := s.options.httpClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +244,7 @@ func (s *RemoteKeySet) refreshAllowed() bool {
 	if s.lastAttemptAt.IsZero() {
 		return true
 	}
-	interval := s.options.RefreshMinimumInterval
+	interval := s.options.refreshMinimumInterval
 	if s.lastError != "" {
 		interval = min(interval, failedRefreshRetryInterval)
 	}

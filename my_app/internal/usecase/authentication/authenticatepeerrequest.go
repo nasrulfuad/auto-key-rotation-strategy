@@ -24,11 +24,12 @@ type AuthenticatePeerRequestInteractor struct {
 
 func NewAuthenticatePeerRequestInteractor(
 	tokenVerifier jwt.TokenVerifier,
-	clock systemclock.Clock,
 	peerIssuer string,
 	leeway time.Duration,
+	opts ...Option,
 ) *AuthenticatePeerRequestInteractor {
-	return &AuthenticatePeerRequestInteractor{tokenVerifier: tokenVerifier, clock: clock, peerIssuer: peerIssuer, leeway: leeway}
+	o := newOptions(opts)
+	return &AuthenticatePeerRequestInteractor{tokenVerifier: tokenVerifier, clock: o.clock, peerIssuer: peerIssuer, leeway: leeway}
 }
 
 func (i *AuthenticatePeerRequestInteractor) Execute(ctx context.Context, in AuthenticatePeerRequestInput) (domain.VerifiedToken, error) {
