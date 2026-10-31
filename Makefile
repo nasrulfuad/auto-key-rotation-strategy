@@ -3,10 +3,10 @@
 COMPOSE ?= $(shell command -v podman >/dev/null 2>&1 && echo "podman compose" || echo "docker compose")
 APPS := my_app partner_app
 
-.PHONY: help env up dev db down down-v logs ps test test-db lint generate docs verify demo
+.PHONY: help env up dev db down down-v logs logs-my-app logs-partner-app ps test test-db lint generate docs verify demo
 
 help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-17s %s\n", $$1, $$2}'
 
 env: ## Create .env from .env.example when missing (fast rotation profile)
 	@test -f .env || cp .env.example .env
@@ -28,6 +28,12 @@ down-v: ## Stop and remove containers AND the database volume
 
 logs: ## Follow the logs of both apps
 	$(COMPOSE) logs -f my_app partner_app
+
+logs-my-app: ## Follow the logs of my_app only
+	$(COMPOSE) logs -f my_app
+
+logs-partner-app: ## Follow the logs of partner_app only
+	$(COMPOSE) logs -f partner_app
 
 ps: ## Show service status
 	$(COMPOSE) ps

@@ -130,6 +130,7 @@ make up        # postgres + both apps, fast profile from .env.example (30s / 2m 
 make dev       # same, but both apps run under air: saving a .go/.sql/.json file rebuilds and restarts that app
 make demo      # activate / terminate every 3s and print which kid signed each side
 make logs      # watch "signing key created", "signing key activated", "signing key retired", "peer signing key discovered", "signing key deleted"
+make logs-my-app / make logs-partner-app   # same, one app only
 make down-v    # remove everything including the database volume
 ```
 
