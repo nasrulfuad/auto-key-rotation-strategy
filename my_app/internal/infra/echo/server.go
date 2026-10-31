@@ -20,9 +20,13 @@ const (
 	HeaderLogID        = "X-Log-ID"
 )
 
+// Options configure the HTTP server.
 type Options struct {
+	// RequestTimeout is the read timeout of the server and the context timeout of every handler.
 	RequestTimeout time.Duration
-	Logger         logging.Logger
+
+	// Logger receives the request log lines; nil discards them.
+	Logger logging.Logger
 }
 
 func New(o Options, router *controller.Router, errorPresenter *presenter.ErrorPresenter) *echo.Echo {

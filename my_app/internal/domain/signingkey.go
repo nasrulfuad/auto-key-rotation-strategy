@@ -92,9 +92,16 @@ func (k SigningKey) CanSignAt(now time.Time) bool {
 	return k.StatusAt(now) == SigningKeyStatusActive
 }
 
+// SigningKeySchedule is the lifecycle every signing key goes through.
 type SigningKeySchedule struct {
-	PendingDuration  time.Duration
-	ActiveDuration   time.Duration
+	// PendingDuration is how long a new key is published in the JWKS before it signs, so peers can fetch it first.
+	PendingDuration time.Duration
+
+	// ActiveDuration is how long a key is the only key that signs.
+	ActiveDuration time.Duration
+
+	// InactiveDuration is how long a key stays published after it stops signing, so the tokens it signed still verify;
+	// it must not be shorter than the token TTL.
 	InactiveDuration time.Duration
 }
 

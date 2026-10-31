@@ -2,10 +2,15 @@
 
 1. **English only.** All comments, variable/function/struct/type names, and log messages must be English. Never Indonesian in code, even if the prompt is Indonesian.
 2. **Confirm before coding.** Before implementing a coding task, give a rough effort estimate and ask whether unit tests should be implemented as part of the change. Skip only for trivial one-liners.
-3. **Clean architecture always.** domain (innermost, no framework/transport/db deps) -> usecase (application rules, port interfaces) -> adapter/infra (controllers, presenters, repositories, framework glue). Dependencies point inward only. Domain must not import net/http, database/sql, or framework code.
-4. **No comments, ever.** Never write comments in code — not inline, not on declarations, nowhere. Code must be self-explanatory through naming and structure alone.
+3. **Clean architecture always.** domain (innermost, no framework/transport/db deps) -> usecase (application rules) -> adapter/infra (controllers, presenters, repositories, gateways, framework glue). Domain must not import net/http, database/sql, or framework code. Use cases depend only on interfaces, never on an implementation: repository interfaces live in `internal/adapter/repository`, gateway interfaces in `internal/adapter/gateway`, infrastructure interfaces in their infra package. Use cases never import the driving side (`adapter/controller`, `adapter/presenter`, `adapter/apidoc`, `infra/echo`, `infra/scheduler`, `infra/config`, `di`), nor `repository/postgres` or `gateway/http`. depguard enforces this.
+4. **No comments, except interface contracts and configuration.** Never write comments in code — not inline, not on functions, ordinary structs or their fields. Code must be self-explanatory through naming and structure alone. Two exceptions get Go doc comments that start with the name and keep a blank line between documented members:
+   - Exported interface types and every method of those interfaces: state the contract a caller relies on (results, the domain errors returned, side effects such as transactions or caching). `// FindActive returns ...`
+   - Configuration structs (`config.Config`, `Options`, `Overrides`, `Audiences`, `SigningKeySchedule`) and every field: state what the value controls, its environment variable and default when it has one, and the constraint it must meet. `// TokenTTL is the lifetime ... TOKEN_TTL, default 5m.`
+
+   Nothing else gets a comment.
 5. **Naming standard.** Every new or renamed identifier in every layer follows the tables below. When existing code disagrees with these rules, the rules win: rename it as part of the change that touches it, never copy the old pattern.
 6. **No JSONB in the database, ever.** No JSONB columns, no `::JSONB` casts, no `jsonb_*` functions in queries, not even to pass a list of IDs or batch rows. Pass lists as typed arrays (`= ANY(sqlc.arg(ids)::UUID[])`, `unnest(...)`). Existing JSONB use is removed when the code around it is touched.
+7. **Interface and implementation files.** Interfaces never share a file with an implementation. The file that implements an interface carries the `impl` suffix after the interface file's name. Every implementation has a compile-time assertion (`var _ repository.SigningKeyReader = (*SigningKeyRepository)(nil)`); when that would make a package import its consumer, the assertion goes in a `<name>impl_test.go`. Generated code (sqlc `store/querier.go`) is exempt.
 
 ## Naming standard
 
@@ -45,20 +50,21 @@
 
 | Topic | Rule | Example |
 |-------|------|---------|
-| Port interfaces | `<Entity>Reader`, `<Entity>Writer`; other ports are role nouns. | `AccountReader`, `PasswordHasher` |
-| Port methods | Verb first, see General. Unpaged lists use the `ListAll` prefix, never an `All` suffix. | `ListAllByProduct`, `FindMasterSet` |
-| Port parameter structs | `<Entity><Operation>`. | `AccountCreate`, `FormRequestSourceDelete` |
+| Driven interfaces | `<Entity>Reader`, `<Entity>Writer`; others are role nouns. Declared outside `usecase`, see the interface table below. | `repository.AccountReader`, `infra/jwt.TokenIssuer` |
+| Use-case-to-use-case interfaces | Declared in the consuming use case package in its own `<role>.go`. | `subscription.TokenSigner` in `tokensigner.go` |
+| Interface methods | Verb first, see General. Unpaged lists use the `ListAll` prefix, never an `All` suffix. | `ListAllByProduct`, `FindMasterSet` |
+| Interface parameter structs | `<Entity><Operation>`, in the same file as the interface. | `AccountCreate`, `FormRequestSourceDelete` |
 | Filters | `<Entity>Filter`, `<Entity>LookupFilter`. Free-text search field is always `Query`. | `SupplierFilter.Query` |
 | Interactors | `<Verb><Object>Interactor`, constructor `New<Verb><Object>Interactor`, single method `Execute(ctx, in)`. One interactor per file; file name is the interactor name without `Interactor`, lower case. Exception: package `lookup` omits the verb and uses a plural object. | `ListTopProductsInteractor` in `listtopproducts.go`; `lookup.PublishersInteractor` |
 | Input / output | `<Interactor name without Interactor>Input` / `...Output`. | `ListTopProductsInput` |
-| Dependency fields | Field and constructor parameter are the interface name in camelCase. | `accountReader port.AccountReader` |
+| Dependency fields | Field and constructor parameter are the interface name in camelCase. | `accountReader repository.AccountReader` |
 | No stutter | A type must not repeat its package name. | `session.Issuer`, not `session.SessionIssuer` |
 
 ### Dependency injection (`internal/di`)
 
 | Topic | Rule | Example |
 |-------|------|---------|
-| `Repositories` / `Overrides` fields | Exactly the interface name. | `AccountReader port.AccountReader` |
+| `Repositories` / `Overrides` fields | Exactly the interface name. | `AccountReader repository.AccountReader` |
 | Local dependency variables | Interface name in camelCase. | `refreshTokenWriter` |
 | Use case variables | `<verb><Object>UC`. | `listAccountsUC`, `checkPublisherAliasUC` |
 
@@ -66,10 +72,38 @@
 
 | Topic | Rule | Example |
 |-------|------|---------|
-| Types | `<Entity>Repository` + `New<Entity>Repository`, named after the port it implements. Never `Store` (that is the sqlc package). | `DatabaseProbeRepository` |
-| Exported methods | Identical to the port. | — |
+| Types | `<Entity>Repository` + `New<Entity>Repository`, named after the interface it implements. Never `Store` (that is the sqlc package). | `DatabaseProbeRepository` |
+| Exported methods | Identical to the interface. | — |
 | Mappers | `to<Target>[From<Source>]`. | `toAccount`, `toSourcesFromListRow` |
 | Helpers | Full entity name, no `src` / `dec` / `tier` / `item` / `contact` prefixes. | `sourceFindRow`, `cogsTierWriteRow` |
+
+### Interfaces and implementations
+
+| Kind | Interface file | Implementation file | Mocks |
+|------|----------------|---------------------|-------|
+| Repository | `internal/adapter/repository/<entity>repository.go`, package `repository`; `<Entity>Reader` and `<Entity>Writer` with their parameter structs | `internal/adapter/repository/postgres/<entity>repositoryimpl.go` | `repository/repositorymocks` |
+| Other repository roles | `internal/adapter/repository/<role>repository.go` | `postgres/<role>repositoryimpl.go` | `repository/repositorymocks` |
+| Gateway | `internal/adapter/gateway/<entity>gateway.go`, package `gateway` | `internal/adapter/gateway/http/<entity>gatewayimpl.go` | `gateway/gatewaymocks` |
+| Infrastructure | `internal/infra/<package>/<role>.go` | `internal/infra/<package>/<role>impl.go` | `<package>/<package>mocks` |
+| Use case to use case | `internal/usecase/<consumer>/<role>.go` | `internal/usecase/<provider>/<role>impl.go` | — |
+
+| Topic | Rule | Example |
+|-------|------|---------|
+| One implementation per file | A file holds one implementing type and its constructor; split when two types implement two interfaces. | `joblockrepositoryimpl.go`, `databaseproberepositoryimpl.go` |
+| Impl tests | Named after the implementation file. | `tokenverifierimpl_test.go` |
+| Mocks | Generated by mockery v3 from the interfaces listed in `.mockery.yml` (`make mocks`), never hand-written. | `repositorymocks.NewMockSigningKeyReader(t)` |
+| Package names | An interface name must not repeat its package name; rename the package instead. | `systemclock.Clock`, not `clock.Clock` |
+
+### Doc comments (rule 4 exceptions)
+
+| Topic | Rule | Example |
+|-------|------|---------|
+| Where | Exported interface types and each of their methods; configuration structs and each of their fields. Nowhere else: not on implementations, functions, ordinary structs, constants or tests. | `repository.SigningKeyReader`, `config.Config`, `jwks.Options` |
+| First word | The name of the documented type, method or field. | `// FindActive returns ...`, `// TokenTTL is ...` |
+| Interface method content | The contract: what it returns, which domain error it returns and when, and side effects (transaction, cache, lock, idempotency). Never restate the signature. | `// Create stores notification and reports whether it was new.` |
+| Configuration field content | What the value controls, then the environment variable and its default (or `required`), then the constraint it must meet. | `// TokenTTL is the lifetime of every token this app signs; it must not exceed KEY_INACTIVE_DURATION.` / `// TOKEN_TTL, default 5m.` |
+| Accuracy | Written from the implementation and the config loader, and updated in the same change that alters the behaviour, default or constraint. | — |
+| Layout | Full sentences, wrapped near 120 columns, one blank line between documented methods or fields. | — |
 
 ### Controller and presenter
 

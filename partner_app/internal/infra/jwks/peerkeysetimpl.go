@@ -27,10 +27,19 @@ const (
 
 var ErrKeyNotFound = errors.New("signing key not found in the peer key set")
 
+// Options configure a RemoteKeySet.
 type Options struct {
-	URL                    string
-	Client                 *http.Client
-	RefreshOnUnknownKeyID  bool
+	// URL is the peer JWKS endpoint.
+	URL string
+
+	// Client fetches the JWKS; nil uses an http.Client with a 5s timeout.
+	Client *http.Client
+
+	// RefreshOnUnknownKeyID makes FindPublicKey refresh the key set when keyID is not cached.
+	RefreshOnUnknownKeyID bool
+
+	// RefreshMinimumInterval is the minimum time between two refreshes triggered by an unknown key ID;
+	// after a failed refresh the next one is allowed after at most one second.
 	RefreshMinimumInterval time.Duration
 }
 

@@ -24,8 +24,12 @@ type Route struct {
 	Audience domain.TokenAudience
 }
 
+// Audiences are the aud values the peer authentication middleware requires per route.
 type Audiences struct {
+	// EntitlementSet is required on the routes that activate or terminate an entitlement.
 	EntitlementSet domain.TokenAudience
+
+	// EntitlementGet is required on the routes that read entitlements.
 	EntitlementGet domain.TokenAudience
 }
 

@@ -24,7 +24,9 @@ type Route struct {
 	Audience domain.TokenAudience
 }
 
+// Audiences are the aud values the peer authentication middleware requires per route.
 type Audiences struct {
+	// ActivationNotification is required on POST /activation-notifications.
 	ActivationNotification domain.TokenAudience
 }
 

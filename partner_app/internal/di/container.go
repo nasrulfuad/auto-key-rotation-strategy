@@ -39,9 +39,15 @@ const (
 	JobTrackSigningKeyStatuses        = "track_signing_key_statuses"
 )
 
+// Overrides replace dependencies of the container, for tests.
 type Overrides struct {
-	Clock       systemclock.Clock
-	HTTPClient  *http.Client
+	// Clock replaces the system clock; nil uses systemclock.New.
+	Clock systemclock.Clock
+
+	// HTTPClient is used for every outbound call; nil uses an http.Client with a 5s timeout.
+	HTTPClient *http.Client
+
+	// OpenAPISpec is served at /openapi.json when ENABLE_API_DOCS is true.
 	OpenAPISpec []byte
 }
 
