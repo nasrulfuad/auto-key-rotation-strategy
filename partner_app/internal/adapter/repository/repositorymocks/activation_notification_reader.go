@@ -8,7 +8,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/domain"
 	mock "github.com/stretchr/testify/mock"
 )
 

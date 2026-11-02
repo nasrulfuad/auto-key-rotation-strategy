@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/gateway"
 )
 
 const maximumResponseBytes = 4096

@@ -24,7 +24,7 @@ linters:
           allow:
             - $gostd
             - github.com/google/uuid
-            - github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain
+            - github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/domain
             - github.com/stretchr/testify
           deny:
             - pkg: net/http
@@ -44,25 +44,25 @@ linters:
               desc: persistence is the adapter ring's concern
             - pkg: github.com/golang-jwt/jwt/v5
               desc: token encoding is infra/jwt's concern
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/store
               desc: sqlc types may only be seen by adapter/repository/postgres
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository/postgres
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/repository/postgres
               desc: use cases depend on the interfaces in adapter/repository, not on the postgres implementation
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway/http
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/gateway/http
               desc: use cases depend on the interfaces in adapter/gateway, not on the HTTP implementation
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/controller
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/controller
               desc: use cases must not depend on the transport adapters that call them
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/presenter
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/presenter
               desc: use cases must not depend on the transport adapters that call them
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/apidoc
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/apidoc
               desc: use cases must not depend on the transport adapters that call them
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/echo
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/echo
               desc: use cases must not depend on the HTTP server
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/scheduler
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/scheduler
               desc: use cases must not depend on the scheduler that runs them
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/config
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/config
               desc: use cases receive configuration values, not the config loader
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/di
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/di
               desc: use cases must not depend on the composition root
 
         store-is-private:
@@ -71,7 +71,7 @@ linters:
             - "!**/internal/adapter/repository/postgres/*.go"
             - "!**/internal/di/*.go"
           deny:
-            - pkg: github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store
+            - pkg: github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/store
               desc: only adapter/repository/postgres may see sqlc types
 
   exclusions:

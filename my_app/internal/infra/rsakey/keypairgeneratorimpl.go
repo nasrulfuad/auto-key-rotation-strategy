@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 )
 
 const MinimumBits = 2048

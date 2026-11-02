@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 )
 
 // SubscriptionReader reads the local copy of the subscriptions held at partner_app.

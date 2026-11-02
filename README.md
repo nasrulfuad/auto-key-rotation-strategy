@@ -4,8 +4,8 @@ Two Go services that reproduce a streaming provider partner integration built on
 
 | App | Plays | Module | Port |
 |---|---|---|---|
-| `my_app` | the partner (us) | `github.com/nasrulfuad/jwks_key_rotation/my_app` | 8081 |
-| `partner_app` | Provider (Entitlement API owner) | `github.com/nasrulfuad/jwks_key_rotation/partner_app` | 8082 |
+| `my_app` | the partner (us) | `github.com/nasrulfuad/auto-key-rotation-strategy/my_app` | 8081 |
+| `partner_app` | Provider (Entitlement API owner) | `github.com/nasrulfuad/auto-key-rotation-strategy/partner_app` | 8082 |
 
 Trust goes both ways. Each app owns an RSA signing key set, rotates it on its own schedule, publishes the public half at `/.well-known/jwks.json`, and verifies the other app's tokens through a cached copy of the other app's JWKS.
 

@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
-	myapp "github.com/nasrulfuad/jwks_key_rotation/my_app"
+	myapp "github.com/nasrulfuad/auto-key-rotation-strategy/my_app"
 )
 
 const minimumConnections = 2

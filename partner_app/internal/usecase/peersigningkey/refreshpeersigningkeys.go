@@ -3,7 +3,7 @@ package peersigningkey
 import (
 	"context"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/jwks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/jwks"
 )
 
 type RefreshPeerSigningKeysInteractor struct {

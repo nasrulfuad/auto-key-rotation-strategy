@@ -7,8 +7,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/presenter"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/signingkey"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/presenter"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/usecase/signingkey"
 )
 
 type SigningKeyController struct {

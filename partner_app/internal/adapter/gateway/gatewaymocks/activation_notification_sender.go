@@ -7,7 +7,7 @@ package gatewaymocks
 import (
 	"context"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/gateway"
 	mock "github.com/stretchr/testify/mock"
 )
 

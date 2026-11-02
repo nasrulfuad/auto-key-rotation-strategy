@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/config"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/config"
 )
 
 func lookup(values map[string]string) func(string) (string, bool) {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/repository"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/logging"
 )
 
 const maximumRunDuration = 5 * time.Minute

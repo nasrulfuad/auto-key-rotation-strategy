@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	myapp "github.com/nasrulfuad/jwks_key_rotation/my_app"
+	myapp "github.com/nasrulfuad/auto-key-rotation-strategy/my_app"
 )
 
 var echoPathParameter = regexp.MustCompile(`:([a-z_]+)`)

@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 )
 
 func (a *app) rotateSigningKey(t *testing.T) (int, map[string]any) {

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/scheduler"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/scheduler"
 )
 
 func TestRunnerTagsEveryRunWithSourceJobAndLogID(t *testing.T) {

@@ -7,7 +7,7 @@ force-file-write: true
 formatter: goimports
 log-level: warn
 packages:
-  github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository:
+  github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/repository:
     interfaces:
       SigningKeyReader: {}
       SigningKeyWriter: {}
@@ -17,26 +17,26 @@ packages:
       EntitlementWriter: {}
       JobLock: {}
       DatabaseProbe: {}
-  github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/gateway:
+  github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/gateway:
     interfaces:
       ActivationNotificationSender: {}
-  github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/rsakey:
+  github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/rsakey:
     interfaces:
       KeyPairGenerator: {}
-  github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/sealer:
+  github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/sealer:
     interfaces:
       PrivateKeySealer: {}
-  github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock:
+  github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/systemclock:
     interfaces:
       Clock: {}
       UUIDGenerator: {}
-  github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging:
+  github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/logging:
     interfaces:
       Logger: {}
-  github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/jwt:
+  github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/jwt:
     interfaces:
       TokenIssuer: {}
       TokenVerifier: {}
-  github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/jwks:
+  github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/jwks:
     interfaces:
       PeerKeySet: {}

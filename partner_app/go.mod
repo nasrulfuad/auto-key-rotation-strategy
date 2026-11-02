@@ -1,4 +1,4 @@
-module github.com/nasrulfuad/jwks_key_rotation/partner_app
+module github.com/nasrulfuad/auto-key-rotation-strategy/partner_app
 
 go 1.26.0
 

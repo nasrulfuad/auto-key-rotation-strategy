@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/systemclock"
 )
 
 func TestSystemNowReturnsCurrentTimeInUTC(t *testing.T) {

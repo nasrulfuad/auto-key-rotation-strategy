@@ -8,9 +8,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	controller "github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/controller/http"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/presenter"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
+	controller "github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/controller/http"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/presenter"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/logging"
 )
 
 const (

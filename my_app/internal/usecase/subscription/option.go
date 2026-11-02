@@ -1,8 +1,8 @@
 package subscription
 
 import (
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/logging"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/systemclock"
 )
 
 type Option func(*options)

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 )
 
 // Config is the whole runtime configuration of my_app, read from environment variables by FromEnv.

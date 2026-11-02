@@ -21,9 +21,9 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/di"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/config"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/postgres"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/di"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/config"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/postgres"
 )
 
 var startTime = time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)

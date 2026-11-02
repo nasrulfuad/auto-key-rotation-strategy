@@ -2,7 +2,7 @@
 
 partner_app is one half of the JWKS key rotation simulation at the repository root. It plays the provider. It owns the Entitlement API, verifies my_app's bearer tokens through my_app's JWKS, and signs the activation notification webhooks it delivers to my_app.
 
-Module path: `github.com/nasrulfuad/jwks_key_rotation/partner_app`. Working rules (English only, no comments, clean architecture, naming standard) live in the root `CLAUDE.md`; the ring rules are in `rules/rules.md` and enforced by depguard in `.golangci.yml`.
+Module path: `github.com/nasrulfuad/auto-key-rotation-strategy/partner_app`. Working rules (English only, no comments, clean architecture, naming standard) live in the root `CLAUDE.md`; the ring rules are in `rules/rules.md` and enforced by depguard in `.golangci.yml`.
 
 ## Where the code for X lives
 

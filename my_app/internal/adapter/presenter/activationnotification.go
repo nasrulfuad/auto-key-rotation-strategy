@@ -3,7 +3,7 @@ package presenter
 import (
 	"time"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 )
 
 type ActivationNotificationPresenter struct{}

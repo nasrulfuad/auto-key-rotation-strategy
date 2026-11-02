@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/jwt/jwtmocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock/systemclockmocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/authentication"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/jwt/jwtmocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/systemclock/systemclockmocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/usecase/authentication"
 )
 
 const peerIssuer = "qa.peer.local"

@@ -3,9 +3,9 @@ package signingkey
 import (
 	"context"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/repository"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/systemclock"
 )
 
 type ListPublishedSigningKeysInteractor struct {

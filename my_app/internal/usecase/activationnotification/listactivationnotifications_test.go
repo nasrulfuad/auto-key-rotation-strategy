@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository/repositorymocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/activationnotification"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/repository/repositorymocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/usecase/activationnotification"
 )
 
 func TestListActivationNotificationsReturnsAtMostOneHundredNotifications(t *testing.T) {

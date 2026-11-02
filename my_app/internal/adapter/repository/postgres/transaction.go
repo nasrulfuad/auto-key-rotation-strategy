@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/store"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/store"
 )
 
 func withTransaction(ctx context.Context, db *sql.DB, run func(queries *store.Queries) error) error {

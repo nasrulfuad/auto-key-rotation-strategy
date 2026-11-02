@@ -7,9 +7,9 @@ import (
 
 	gojwt "github.com/golang-jwt/jwt/v5"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/jwks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/jwks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/logging"
 )
 
 var _ PublicKeySource = (*jwks.RemoteKeySet)(nil)

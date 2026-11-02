@@ -3,7 +3,7 @@ package echo
 import (
 	"time"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/logging"
 )
 
 type Option func(*options)

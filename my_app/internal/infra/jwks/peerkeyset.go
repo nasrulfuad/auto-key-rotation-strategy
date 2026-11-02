@@ -3,7 +3,7 @@ package jwks
 import (
 	"context"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 )
 
 // PeerKeySet is the cached copy of the peer JWKS.

@@ -2,7 +2,7 @@
 
 my_app is one half of the JWKS key rotation simulation at the repository root. It plays the partner side of the integration. It signs the bearer token of every entitlement call it makes to partner_app and verifies the activation notification webhooks partner_app sends back.
 
-Module path: `github.com/nasrulfuad/jwks_key_rotation/my_app`. Working rules (English only, no comments, clean architecture, naming standard) live in the root `CLAUDE.md`; the ring rules are in `rules/rules.md` and enforced by depguard in `.golangci.yml`.
+Module path: `github.com/nasrulfuad/auto-key-rotation-strategy/my_app`. Working rules (English only, no comments, clean architecture, naming standard) live in the root `CLAUDE.md`; the ring rules are in `rules/rules.md` and enforced by depguard in `.golangci.yml`.
 
 ## Where the code for X lives
 

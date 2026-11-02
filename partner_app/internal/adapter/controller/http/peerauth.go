@@ -5,9 +5,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/authentication"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/usecase/authentication"
 )
 
 const verifiedTokenKey = "verified_token"

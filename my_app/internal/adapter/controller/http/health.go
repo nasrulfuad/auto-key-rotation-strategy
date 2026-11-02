@@ -5,9 +5,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/presenter"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/presenter"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/repository"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 )
 
 type HealthController struct {

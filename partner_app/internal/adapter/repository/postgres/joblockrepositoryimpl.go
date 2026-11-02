@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/store"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/repository"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/store"
 )
 
 type JobLockRepository struct {

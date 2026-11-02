@@ -6,10 +6,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/sealer"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/store"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/repository"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/sealer"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/store"
 )
 
 type SigningKeyRepository struct {

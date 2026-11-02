@@ -14,10 +14,10 @@ import (
 
 	"golang.org/x/sync/singleflight"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/rsakey"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/logging"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/rsakey"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/systemclock"
 )
 
 const (

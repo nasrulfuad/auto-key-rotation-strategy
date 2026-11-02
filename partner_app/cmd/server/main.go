@@ -20,11 +20,11 @@ import (
 
 	"github.com/joho/godotenv"
 
-	partnerapp "github.com/nasrulfuad/jwks_key_rotation/partner_app"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/di"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/config"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/logging"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/postgres"
+	partnerapp "github.com/nasrulfuad/auto-key-rotation-strategy/partner_app"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/di"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/config"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/logging"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/postgres"
 )
 
 const (

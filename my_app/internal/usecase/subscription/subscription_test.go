@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/gateway/gatewaymocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository/repositorymocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock/systemclockmocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/subscription"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/gateway"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/gateway/gatewaymocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/repository/repositorymocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/systemclock/systemclockmocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/usecase/subscription"
 )
 
 var now = time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)

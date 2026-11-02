@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/adapter/repository/repositorymocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/logging/loggingmocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/infra/systemclock/systemclockmocks"
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/usecase/signingkey"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/repository/repositorymocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/logging/loggingmocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/systemclock/systemclockmocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/usecase/signingkey"
 )
 
 type trackFixture struct {

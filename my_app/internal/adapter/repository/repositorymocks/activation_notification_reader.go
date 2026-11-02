@@ -7,7 +7,7 @@ package repositorymocks
 import (
 	"context"
 
-	"github.com/nasrulfuad/jwks_key_rotation/my_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 	mock "github.com/stretchr/testify/mock"
 )
 

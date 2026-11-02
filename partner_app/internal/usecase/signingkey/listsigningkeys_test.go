@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/adapter/repository/repositorymocks"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/domain"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/infra/systemclock/systemclockmocks"
-	"github.com/nasrulfuad/jwks_key_rotation/partner_app/internal/usecase/signingkey"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/repository/repositorymocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/domain"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/systemclock/systemclockmocks"
+	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/usecase/signingkey"
 )
 
 func TestListSigningKeysReturnsEveryKeyWithTheInstantItWasListedAt(t *testing.T) {
