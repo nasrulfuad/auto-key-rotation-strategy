@@ -1,11 +1,11 @@
-FROM docker.io/library/golang:1.26.10-alpine3.24@sha256:87c65a688975c0b1d4585d204874c45ca78354670e3a5f11368c5a492303d696 AS dev
+FROM docker.io/library/golang:1.27.2-alpine3.24@sha256:f92b6ef800e499660581efdabdf25d9d817a9d124eaf900924f0504e7e27e12d AS dev
 RUN go install github.com/air-verse/air@v1.62.0
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 CMD ["air", "-c", ".air.toml"]
 
-FROM docker.io/library/golang:1.26.10-alpine3.24@sha256:87c65a688975c0b1d4585d204874c45ca78354670e3a5f11368c5a492303d696 AS build
+FROM docker.io/library/golang:1.27.2-alpine3.24@sha256:f92b6ef800e499660581efdabdf25d9d817a9d124eaf900924f0504e7e27e12d AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
