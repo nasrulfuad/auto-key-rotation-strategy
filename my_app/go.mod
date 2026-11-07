@@ -1,6 +1,6 @@
 module github.com/nasrulfuad/auto-key-rotation-strategy/my_app
 
-go 1.26.10
+go 1.27.3
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1

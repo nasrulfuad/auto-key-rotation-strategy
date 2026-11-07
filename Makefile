@@ -78,7 +78,7 @@ security: vulncheck scan-deps secrets lint-dockerfile scan-image ## Every securi
 hooks: ## Use the versioned git hooks in .githooks (gitleaks on every commit)
 	git config core.hooksPath .githooks
 
-verify: lint test test-db secrets ## Everything that gates a commit
+verify: lint test test-db secrets vulncheck scan-deps lint-dockerfile scan-image ## Everything that gates a commit, same scans as CI (needs network and a container runtime)
 
 demo: ## Send traffic through my_app for DURATION seconds and show which kid signed each request
 	@./scripts/demo.sh $${DURATION:-300}

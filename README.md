@@ -16,7 +16,7 @@ Trust goes both ways. Each app owns an RSA signing key set, rotates it on its ow
 
 | Area | Choice |
 |---|---|
-| Language | Go 1.26.10, one module per app, tied together by `go.work` |
+| Language | Go 1.27.3, one module per app, tied together by `go.work` |
 | HTTP | echo v5 (`internal/infra/echo`), handlers in `internal/adapter/controller/http` |
 | Tokens | `golang-jwt/jwt/v5`, RS256, RSA keys generated in `internal/infra/rsakey`, JWKS served and cached in `internal/infra/jwks` |
 | Key storage | PostgreSQL 17 through pgx v5; private keys sealed with AES-GCM (`internal/infra/sealer`, `KEY_ENCRYPTION_KEY`) before they are stored |
@@ -265,8 +265,9 @@ make vulncheck        # govulncheck: reachable vulnerabilities in dependencies a
 make scan-deps        # osv-scanner: every known vulnerability in go.mod, reachable or not
 make secrets          # gitleaks over the whole git history
 make lint-dockerfile  # hadolint on both Dockerfiles
+make -C <app> check-go-version   # the Dockerfile golang tag must equal the go directive in go.mod (part of lint)
 make scan-image       # build the runtime images and fail on fixable HIGH/CRITICAL findings (trivy)
-make security         # all of the above
+make security         # all of the above; make verify runs them too, plus lint and tests
 ```
 
 A reviewed false positive is ignored where its scanner looks: gitleaks fingerprints in `.gitleaksignore`, osv-scanner entries (with `reason` and `ignoreUntil`) in `<app>/osv-scanner.toml`, gosec rules in `<app>/.golangci.yml` with the reason they cannot apply.

@@ -10,7 +10,7 @@ TRIVY_IMAGE    := docker.io/aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5
 HADOLINT_IMAGE := docker.io/hadolint/hadolint:v2.15.1@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d
 SCAN_IMAGE     := localhost/my-app:scan
 
-.PHONY: help generate sqlc mocks mocks-check docs docs-check fmt lint test test-db vulncheck scan-deps lint-dockerfile scan-image security verify run
+.PHONY: help generate sqlc mocks mocks-check docs docs-check fmt check-go-version lint test test-db vulncheck scan-deps lint-dockerfile scan-image security verify run
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
@@ -36,7 +36,13 @@ fmt: ## Format Go sources and tidy the module
 	gofmt -w .
 	go mod tidy
 
-lint: ## gofmt check, go vet, golangci-lint (including integration tests)
+check-go-version: ## Fail when the Dockerfile builds with a different Go version than go.mod declares
+	@want=$$(awk '/^go / {print $$2}' go.mod); \
+	for got in $$(sed -n 's#^FROM docker.io/library/golang:\([0-9.]*\)-.*#\1#p' Dockerfile); do \
+		test "$$got" = "$$want" || { echo "Dockerfile builds with Go $$got but go.mod declares go $$want"; exit 1; }; \
+	done
+
+lint: check-go-version ## Go version check, gofmt check, go vet, golangci-lint (including integration tests)
 	@test -z "$$(gofmt -l .)" || (gofmt -l . && exit 1)
 	go vet ./...
 	golangci-lint run ./...
@@ -68,7 +74,7 @@ scan-image: ## Build the runtime image and fail on fixable HIGH/CRITICAL vulnera
 
 security: vulncheck scan-deps lint-dockerfile scan-image ## Every security scan of this app
 
-verify: lint test test-db vulncheck scan-deps ## Everything that gates a commit
+verify: lint test test-db vulncheck scan-deps lint-dockerfile scan-image ## Everything that gates a commit, same scans as CI
 
 run: ## Run the server on the host (reads .env when present)
 	go run ./cmd/server
