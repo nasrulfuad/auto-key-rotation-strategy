@@ -12,6 +12,7 @@
 6. **No JSONB in the database, ever.** No JSONB columns, no `::JSONB` casts, no `jsonb_*` functions in queries, not even to pass a list of IDs or batch rows. Pass lists as typed arrays (`= ANY(sqlc.arg(ids)::UUID[])`, `unnest(...)`). Existing JSONB use is removed when the code around it is touched.
 7. **Interface and implementation files.** Interfaces never share a file with an implementation. The file that implements an interface carries the `impl` suffix after the interface file's name. Every implementation has a compile-time assertion (`var _ repository.SigningKeyReader = (*SigningKeyRepository)(nil)`); when that would make a package import its consumer, the assertion goes in a `<name>impl_test.go`. Generated code (sqlc `store/querier.go`) is exempt.
 8. **Functional options for constructors.** Every constructor takes its required dependencies and values as positional parameters and everything that has a sensible default as trailing `opts ...Option`. Each package declares one `type Option func(*options)`, an unexported `options` struct holding the defaults, `With<Name>` setters that ignore a nil dependency, and `newOptions(opts)` that applies them; every constructor of that package accepts `opts ...Option`. Never pass `nil` for an optional dependency and never add an `Options` / `Overrides` struct parameter. A package whose constructors have nothing optional (`sealer`, `systemclock`, `usecase/peersigningkey`) declares no `Option`. Each package tests its defaults and setters in `option_internal_test.go`.
+9. **Security gates stay green.** `make verify` runs govulncheck, osv-scanner and gitleaks; `.github/workflows/security.yml` also runs gosec (inside `make lint`), hadolint and trivy for both apps. Fix a finding by upgrading (the Go patch in `go.mod` and `go.work`, the dependency, the base image digest) or by changing the code. Ignore only a reviewed false positive, and only where its scanner looks: gosec in `exclusions.rules` of the app's `.golangci.yml` with `path`, `text: "G<id>:"` and a YAML comment stating why it cannot apply (configuration, so rule 4 allows it); gitleaks by fingerprint in `.gitleaksignore`; osv-scanner in `<app>/osv-scanner.toml` with `reason` and `ignoreUntil`. Never `#nosec` or `//nolint:gosec`. Every scanner, base image and GitHub Action is pinned by version plus digest or commit SHA; Dependabot bumps them. A Dockerfile keeps the production stage named `runtime`, running as UID `10001`.
 
 ## Naming standard
 
@@ -127,7 +128,7 @@
 | Request structs | `<verb><Object>Request`, unexported. | `createAccountRequest` |
 | Presenters | `<Entity>Presenter`; method name equals the handler it serves; a single-resource response shared by several handlers is `Get<X>`. | `FormRequestPresenter.ListSources` |
 | Response structs | `<object>Body`, unexported. Never `ResponseBody`. | `accountBody` |
-| `echo.Context` variable | Always `ectx`. | — |
+| `*echo.Context` variable (echo v5) | Always `ectx`. | `func (c *AccountController) Get(ectx *echo.Context) error` |
 
 ### HTTP contract
 
