@@ -23,6 +23,7 @@ import (
 	myapp "github.com/nasrulfuad/auto-key-rotation-strategy/my_app"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/di"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/config"
+	echoserver "github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/echo"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/logging"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/postgres"
 )
@@ -91,10 +92,11 @@ func run() error {
 	container.StartBackground(ctx)
 
 	addr := fmt.Sprintf("0.0.0.0:%d", cfg.Port)
+	server := echoserver.NewServer(container.Echo, addr, echoserver.WithRequestTimeout(cfg.RequestTimeout))
 	serverErr := make(chan error, 1)
 	go func() {
 		logger.Info(ctx, serviceName+" listening", "addr", addr)
-		if err := container.Echo.Start(addr); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serverErr <- err
 		}
 		close(serverErr)
@@ -111,7 +113,7 @@ func run() error {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
-	if err := container.Echo.Shutdown(shutdownCtx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		return fmt.Errorf("graceful shutdown failed: %w", err)
 	}
 	logger.Info(shutdownCtx, "shutdown complete")

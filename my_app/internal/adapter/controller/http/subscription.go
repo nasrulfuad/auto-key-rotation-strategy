@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/presenter"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
@@ -59,7 +59,7 @@ type terminateSubscriptionRequest struct {
 // @Failure      502  {object}  apidoc.ErrorEnvelope  "PARTNER_REQUEST_REJECTED (message carries partner_app status and code), PARTNER_UNAVAILABLE"
 // @Failure      503  {object}  apidoc.ErrorEnvelope  "SIGNING_KEY_NOT_FOUND"
 // @Router       /activations [post]
-func (c *SubscriptionController) ActivateSubscription(ectx echo.Context) error {
+func (c *SubscriptionController) ActivateSubscription(ectx *echo.Context) error {
 	var request activateSubscriptionRequest
 	if err := ectx.Bind(&request); err != nil {
 		return domain.BadRequest("request body must be valid JSON")
@@ -87,7 +87,7 @@ func (c *SubscriptionController) ActivateSubscription(ectx echo.Context) error {
 // @Failure      502  {object}  apidoc.ErrorEnvelope  "PARTNER_REQUEST_REJECTED (404 ENTITLEMENT_NOT_FOUND when it was never activated), PARTNER_UNAVAILABLE"
 // @Failure      503  {object}  apidoc.ErrorEnvelope  "SIGNING_KEY_NOT_FOUND"
 // @Router       /terminations [post]
-func (c *SubscriptionController) TerminateSubscription(ectx echo.Context) error {
+func (c *SubscriptionController) TerminateSubscription(ectx *echo.Context) error {
 	var request terminateSubscriptionRequest
 	if err := ectx.Bind(&request); err != nil {
 		return domain.BadRequest("request body must be valid JSON")
@@ -109,7 +109,7 @@ func (c *SubscriptionController) TerminateSubscription(ectx echo.Context) error 
 // @Success      200  {object}  apidoc.SubscriptionList
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /subscriptions [get]
-func (c *SubscriptionController) ListSubscriptions(ectx echo.Context) error {
+func (c *SubscriptionController) ListSubscriptions(ectx *echo.Context) error {
 	subscriptions, err := c.listSubscriptions.Execute(ectx.Request().Context())
 	if err != nil {
 		return err

@@ -46,6 +46,9 @@ func TestFromLookupRejectsInvalidConfiguration(t *testing.T) {
 		"check slower than pending": {"KEY_ROTATION_CHECK_INTERVAL": "5m"},
 		"unparsable duration":       {"KEY_ACTIVE_DURATION": "twenty minutes"},
 		"zero inactive duration":    {"KEY_INACTIVE_DURATION": "0s", "TOKEN_TTL": "1s"},
+		"zero batch size":           {"ACTIVATION_NOTIFICATION_BATCH_SIZE": "0"},
+		"batch size above int32":    {"ACTIVATION_NOTIFICATION_BATCH_SIZE": "2147483648"},
+		"attempts above int32":      {"ACTIVATION_NOTIFICATION_MAX_ATTEMPTS": "2147483648"},
 	}
 	for name, values := range cases {
 		t.Run(name, func(t *testing.T) {

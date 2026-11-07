@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/presenter"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
@@ -51,7 +51,7 @@ type receiveActivationNotificationRequest struct {
 // @Failure      401  {object}  apidoc.ErrorEnvelope  "TOKEN_INVALID, TOKEN_ISSUER_UNKNOWN, TOKEN_SIGNING_KEY_NOT_FOUND, TOKEN_CLAIM_INVALID"
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /activation-notifications [post]
-func (c *ActivationNotificationController) ReceiveActivationNotification(ectx echo.Context) error {
+func (c *ActivationNotificationController) ReceiveActivationNotification(ectx *echo.Context) error {
 	token, err := verifiedToken(ectx)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (c *ActivationNotificationController) ReceiveActivationNotification(ectx ec
 // @Success      200  {object}  apidoc.ActivationNotificationList
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /activation-notifications [get]
-func (c *ActivationNotificationController) ListActivationNotifications(ectx echo.Context) error {
+func (c *ActivationNotificationController) ListActivationNotifications(ectx *echo.Context) error {
 	notifications, err := c.listActivationNotifications.Execute(ectx.Request().Context())
 	if err != nil {
 		return err

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	controller "github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/controller/http"
 	gateway "github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/gateway/http"

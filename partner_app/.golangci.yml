@@ -7,6 +7,9 @@ linters:
     - bodyclose
     - nolintlint
     - depguard
+    # gosec is the static security analysis gate. Findings are fixed, or excluded below with the reason they
+    # cannot apply.
+    - gosec
 
   settings:
     errcheck:
@@ -38,7 +41,7 @@ linters:
           files:
             - "**/internal/usecase/**/*.go"
           deny:
-            - pkg: github.com/labstack/echo/v4
+            - pkg: github.com/labstack/echo/v5
               desc: transport is the adapter ring's concern
             - pkg: database/sql
               desc: persistence is the adapter ring's concern
@@ -77,7 +80,17 @@ linters:
   exclusions:
     rules:
       - path: _test\.go
-        linters: [errcheck]
+        linters: [errcheck, gosec]
+      # G115: sqlc maps INTEGER columns to int32 while the domain uses int. The batch size and the delivery attempts
+      # are bounded to math.MaxInt32 by the config loader, and attempts never exceed the configured maximum.
+      - path: internal/adapter/repository/postgres/
+        linters: [gosec]
+        text: "G115:"
+      # G304, G306: fixopenapi only runs from go:generate on the committed spec path chosen by the developer, never
+      # on untrusted input, and the spec is a world-readable repository file.
+      - path: cmd/fixopenapi/
+        linters: [gosec]
+        text: "G30[46]:"
 
 formatters:
   enable:

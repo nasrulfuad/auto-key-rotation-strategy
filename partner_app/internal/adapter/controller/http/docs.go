@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 type DocsController struct {
@@ -14,11 +14,11 @@ func NewDocsController(spec []byte, opts ...Option) *DocsController {
 	return &DocsController{spec: spec}
 }
 
-func (c *DocsController) OpenAPI(ectx echo.Context) error {
+func (c *DocsController) OpenAPI(ectx *echo.Context) error {
 	return ectx.Blob(http.StatusOK, "application/json", c.spec)
 }
 
-func (c *DocsController) UI(ectx echo.Context) error {
+func (c *DocsController) UI(ectx *echo.Context) error {
 	return ectx.HTML(http.StatusOK, swaggerUIPage)
 }
 

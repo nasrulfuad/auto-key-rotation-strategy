@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/presenter"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/usecase/peersigningkey"
@@ -28,7 +28,7 @@ func NewPeerSigningKeyController(
 // @Produce      json
 // @Success      200  {object}  apidoc.PeerSigningKeyList
 // @Router       /peer-signing-keys [get]
-func (c *PeerSigningKeyController) ListPeerSigningKeys(ectx echo.Context) error {
+func (c *PeerSigningKeyController) ListPeerSigningKeys(ectx *echo.Context) error {
 	out := c.listPeerSigningKeys.Execute(ectx.Request().Context())
 	return ectx.JSON(http.StatusOK, c.presenter.ListPeerSigningKeys(out))
 }

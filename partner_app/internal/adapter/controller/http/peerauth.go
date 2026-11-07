@@ -3,7 +3,7 @@ package http
 import (
 	"strings"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/domain"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/infra/logging"
@@ -23,7 +23,7 @@ func NewPeerAuthMiddleware(authenticatePeerRequest *authentication.AuthenticateP
 
 func (m *PeerAuthMiddleware) Require(audience domain.TokenAudience) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(ectx echo.Context) error {
+		return func(ectx *echo.Context) error {
 			ctx := ectx.Request().Context()
 			token, err := m.authenticatePeerRequest.Execute(ctx, authentication.AuthenticatePeerRequestInput{
 				RawToken: bearerToken(ectx.Request().Header.Get(echo.HeaderAuthorization)),
@@ -49,7 +49,7 @@ func bearerToken(header string) string {
 	return strings.TrimSpace(token)
 }
 
-func verifiedToken(ectx echo.Context) (domain.VerifiedToken, error) {
+func verifiedToken(ectx *echo.Context) (domain.VerifiedToken, error) {
 	token, ok := ectx.Get(verifiedTokenKey).(domain.VerifiedToken)
 	if !ok {
 		return domain.VerifiedToken{}, domain.Internalf("route %s has no verified token", ectx.Path())

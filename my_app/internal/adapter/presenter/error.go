@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/domain"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/infra/logging"
@@ -84,7 +84,7 @@ func NewErrorPresenter(opts ...Option) *ErrorPresenter {
 	return &ErrorPresenter{logger: newOptions(opts).logger}
 }
 
-func (p *ErrorPresenter) Render(err error, ectx echo.Context) {
+func (p *ErrorPresenter) Render(ectx *echo.Context, err error) {
 	appErr := toDomainError(err)
 	status := Status(appErr.Kind())
 	request := ectx.Request()
@@ -98,7 +98,7 @@ func (p *ErrorPresenter) Render(err error, ectx echo.Context) {
 	} else {
 		p.logger.Warn(ctx, "request rejected", fields...)
 	}
-	if ectx.Response().Committed {
+	if response, unwrapErr := echo.UnwrapResponse(ectx.Response()); unwrapErr == nil && response.Committed {
 		return
 	}
 	var field *string
@@ -119,13 +119,12 @@ func toDomainError(err error) *domain.Error {
 	if errors.As(err, &appErr) {
 		return appErr
 	}
-	var httpErr *echo.HTTPError
-	if errors.As(err, &httpErr) {
-		switch httpErr.Code {
+	if status := echo.StatusCode(err); status != 0 {
+		switch status {
 		case http.StatusNotFound:
 			return domain.NotFound("route_not_found")
 		case http.StatusBadRequest, http.StatusUnsupportedMediaType, http.StatusMethodNotAllowed, http.StatusRequestEntityTooLarge:
-			return domain.BadRequest(httpErrorMessage(httpErr))
+			return domain.BadRequest(httpErrorMessage(err, status))
 		case http.StatusServiceUnavailable:
 			return domain.ServiceUnavailableCoded("SERVICE_UNAVAILABLE", "service unavailable")
 		default:
@@ -135,9 +134,9 @@ func toDomainError(err error) *domain.Error {
 	return domain.Internal(err)
 }
 
-func httpErrorMessage(httpErr *echo.HTTPError) string {
-	if msg, ok := httpErr.Message.(string); ok && msg != "" {
-		return msg
+func httpErrorMessage(err error, status int) string {
+	if httpErr, ok := errors.AsType[*echo.HTTPError](err); ok && httpErr.Message != "" {
+		return httpErr.Message
 	}
-	return http.StatusText(httpErr.Code)
+	return http.StatusText(status)
 }

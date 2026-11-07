@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -25,7 +25,7 @@ func TestServerTagsRequestContextAndResponseWithLogID(t *testing.T) {
 		presenter.NewErrorPresenter(),
 		echoserver.WithRequestTimeout(time.Second), echoserver.WithLogger(logging.NewJSON(&buffer, logging.WithLevel("debug"), logging.WithService("test"))))
 	var fields []any
-	server.GET("/probe", func(ectx echo.Context) error {
+	server.GET("/probe", func(ectx *echo.Context) error {
 		fields = logging.ListContextFields(ectx.Request().Context())
 		return ectx.NoContent(http.StatusNoContent)
 	})

@@ -12,6 +12,57 @@ Trust goes both ways. Each app owns an RSA signing key set, rotates it on its ow
 - `my_app` signs the bearer token of every activation and termination it sends to `partner_app` (`aud` = `set.entitlement...`).
 - `partner_app` signs every activation notification webhook it sends back to `my_app` (`aud` = `activation-notification...`).
 
+## What is inside
+
+| Area | Choice |
+|---|---|
+| Language | Go 1.26.10, one module per app, tied together by `go.work` |
+| HTTP | echo v5 (`internal/infra/echo`), handlers in `internal/adapter/controller/http` |
+| Tokens | `golang-jwt/jwt/v5`, RS256, RSA keys generated in `internal/infra/rsakey`, JWKS served and cached in `internal/infra/jwks` |
+| Key storage | PostgreSQL 17 through pgx v5; private keys sealed with AES-GCM (`internal/infra/sealer`, `KEY_ENCRYPTION_KEY`) before they are stored |
+| SQL | sqlc generates `internal/store` from `query/*.sql`; goose migrations in `migrations/` are embedded and applied on boot |
+| Scheduler | `internal/infra/scheduler` runs the jobs below; a PostgreSQL advisory lock (`pg_try_advisory_xact_lock`) lets only one replica run a job at a time |
+| API docs | swag annotations → `api/openapi.json` (OpenAPI 3.1), served with Swagger UI at `/docs` |
+| Tests | testify, mockery v3 mocks from `.mockery.yml`, integration tests behind the `integration` tag against a real database |
+| Quality | golangci-lint with depguard ring rules and gosec; govulncheck, osv-scanner, gitleaks, hadolint and trivy (see [Security scans](#security-scans)) |
+| Runtime | multi-stage `Dockerfile` per app (`dev` stage under air, `runtime` stage on alpine as a non-root user), `docker-compose.yml` + `docker-compose.dev.yml` |
+
+Scheduled jobs:
+
+| Job | App | Does |
+|---|---|---|
+| `ensure_signing_keys` | both | creates the next key as pending before the current key stops signing (also run once at startup) |
+| `track_signing_key_statuses` | both | logs every phase change: pending, activated, retired, expired |
+| `delete_expired_signing_keys` | both | removes keys past `delete_after`, which drops them from the JWKS |
+| `refresh_peer_signing_keys` | both | polls the other app's JWKS every `PEER_JWKS_POLL_INTERVAL` |
+| `deliver_activation_notifications` | `partner_app` | sends queued webhooks to `my_app` with retry and backoff |
+
+Repository layout:
+
+```
+.
+├── my_app/, partner_app/         one service each, same layout:
+│   ├── cmd/server                entry point; cmd/fixopenapi post-processes the generated spec
+│   ├── internal/domain           entities, statuses, domain errors (no framework imports)
+│   ├── internal/usecase          interactors: signingkey, peersigningkey, authentication, subscription /
+│   │                             entitlement, activationnotification
+│   ├── internal/adapter          controller, presenter, apidoc, repository (+ postgres), gateway (+ http)
+│   ├── internal/infra            config, echo, jwt, jwks, rsakey, sealer, scheduler, postgres, logging, systemclock
+│   ├── internal/di               composition root
+│   ├── internal/store            sqlc output (generated)
+│   ├── internal/integration      end-to-end tests with a fake clock
+│   ├── query/, migrations/       sqlc queries and goose migrations
+│   ├── api/openapi.json          generated spec
+│   └── .golangci.yml, .mockery.yml, sqlc.yaml, osv-scanner.toml
+├── docker/postgres/init.sql      creates the my_app and partner_app databases
+├── scripts/demo.sh               traffic generator behind `make demo`
+├── .github/                      security workflow and Dependabot
+├── .githooks/pre-commit          gitleaks on staged changes (`make hooks`)
+└── Makefile                      root targets that fan out to both apps
+```
+
+The dependency rule is domain ← usecase ← adapter/infra: use cases depend only on interfaces declared in `adapter/repository`, `adapter/gateway` or the infra package, and depguard fails the lint when a ring points outward. `my_app/rules/rules.md` and `CLAUDE.md` hold the full naming and layering rules.
+
 ## Integration flows
 
 ### my_app → partner_app: activation and termination
@@ -200,9 +251,25 @@ Errors use one envelope: `{"error":{"code":"...","message":"..."}}`. Token failu
 make test      # unit tests of both apps
 make db        # postgres only
 make test-db   # integration tests: full rotation with a fake clock, polling failure, entitlement + webhook flows
-make lint      # gofmt, go vet, golangci-lint with depguard ring rules
+make lint      # gofmt, go vet, golangci-lint with depguard ring rules and gosec
 make docs      # regenerate api/openapi.json of both apps from the swag annotations
 ```
+
+## Security scans
+
+Every scanner is pinned and runs through `go run` or a container (`podman` when present, else `docker`), so nothing has to be installed on the host. `.github/workflows/security.yml` runs the same targets on every push to `main`, every pull request and weekly; Dependabot bumps Go modules, base images and actions weekly.
+
+```
+make hooks            # once per clone: gitleaks scans staged changes on every commit
+make vulncheck        # govulncheck: reachable vulnerabilities in dependencies and the stdlib
+make scan-deps        # osv-scanner: every known vulnerability in go.mod, reachable or not
+make secrets          # gitleaks over the whole git history
+make lint-dockerfile  # hadolint on both Dockerfiles
+make scan-image       # build the runtime images and fail on fixable HIGH/CRITICAL findings (trivy)
+make security         # all of the above
+```
+
+A reviewed false positive is ignored where its scanner looks: gitleaks fingerprints in `.gitleaksignore`, osv-scanner entries (with `reason` and `ignoreUntil`) in `<app>/osv-scanner.toml`, gosec rules in `<app>/.golangci.yml` with the reason they cannot apply.
 
 ## Not simulated
 

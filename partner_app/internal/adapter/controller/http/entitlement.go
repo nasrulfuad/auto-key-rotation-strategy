@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/presenter"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/domain"
@@ -58,7 +58,7 @@ type offerRequest struct {
 // @Failure      401  {object}  apidoc.ErrorEnvelope  "TOKEN_INVALID, TOKEN_ISSUER_UNKNOWN, TOKEN_SIGNING_KEY_NOT_FOUND, TOKEN_CLAIM_INVALID"
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /subjects/{subject_id}/entitlements/{entitlement_id} [put]
-func (c *EntitlementController) UpsertEntitlement(ectx echo.Context) error {
+func (c *EntitlementController) UpsertEntitlement(ectx *echo.Context) error {
 	token, err := verifiedToken(ectx)
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (c *EntitlementController) UpsertEntitlement(ectx echo.Context) error {
 // @Failure      404  {object}  apidoc.ErrorEnvelope  "ENTITLEMENT_NOT_FOUND"
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /subjects/{subject_id}/entitlements/{entitlement_id} [get]
-func (c *EntitlementController) GetEntitlement(ectx echo.Context) error {
+func (c *EntitlementController) GetEntitlement(ectx *echo.Context) error {
 	token, err := verifiedToken(ectx)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (c *EntitlementController) GetEntitlement(ectx echo.Context) error {
 // @Failure      401  {object}  apidoc.ErrorEnvelope  "TOKEN_INVALID, TOKEN_ISSUER_UNKNOWN, TOKEN_SIGNING_KEY_NOT_FOUND, TOKEN_CLAIM_INVALID"
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /subjects/{subject_id}/entitlements [get]
-func (c *EntitlementController) ListEntitlements(ectx echo.Context) error {
+func (c *EntitlementController) ListEntitlements(ectx *echo.Context) error {
 	token, err := verifiedToken(ectx)
 	if err != nil {
 		return err
@@ -148,7 +148,7 @@ func (c *EntitlementController) ListEntitlements(ectx echo.Context) error {
 // @Failure      404  {object}  apidoc.ErrorEnvelope  "ENTITLEMENT_NOT_FOUND"
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /subjects/{subject_id}/entitlements/{entitlement_id}/terminate [post]
-func (c *EntitlementController) TerminateEntitlement(ectx echo.Context) error {
+func (c *EntitlementController) TerminateEntitlement(ectx *echo.Context) error {
 	token, err := verifiedToken(ectx)
 	if err != nil {
 		return err

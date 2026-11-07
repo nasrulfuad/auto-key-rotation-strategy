@@ -2,11 +2,12 @@ package echo
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 
 	controller "github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/controller/http"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/my_app/internal/adapter/presenter"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	maximumRequestBody = "1M"
+	maximumRequestBody = 1 << 20
 	readHeaderTimeout  = 5 * time.Second
 	idleTimeout        = 2 * time.Minute
 	HeaderLogID        = "X-Log-ID"
@@ -24,12 +25,7 @@ func New(router *controller.Router, errorPresenter *presenter.ErrorPresenter, op
 	o := newOptions(opts)
 	logger := o.logger
 	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
 	e.HTTPErrorHandler = errorPresenter.Render
-	e.Server.ReadHeaderTimeout = readHeaderTimeout
-	e.Server.ReadTimeout = o.requestTimeout
-	e.Server.IdleTimeout = idleTimeout
 
 	e.Use(logRequest(logger))
 	e.Use(middleware.Recover())
@@ -40,9 +36,20 @@ func New(router *controller.Router, errorPresenter *presenter.ErrorPresenter, op
 	return e
 }
 
+func NewServer(handler http.Handler, address string, opts ...Option) *http.Server {
+	o := newOptions(opts)
+	return &http.Server{
+		Addr:              address,
+		Handler:           handler,
+		ReadHeaderTimeout: readHeaderTimeout,
+		ReadTimeout:       o.requestTimeout,
+		IdleTimeout:       idleTimeout,
+	}
+}
+
 func logRequest(logger logging.Logger) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(ectx echo.Context) error {
+		return func(ectx *echo.Context) error {
 			startedAt := time.Now()
 			logID := uuid.NewString()
 			ectx.Response().Header().Set(HeaderLogID, logID)
@@ -50,13 +57,21 @@ func logRequest(logger logging.Logger) echo.MiddlewareFunc {
 				logging.FieldSource, logging.SourceAPI, logging.FieldLogID, logID)))
 			err := next(ectx)
 			if err != nil {
-				ectx.Error(err)
+				ectx.Echo().HTTPErrorHandler(ectx, err)
 			}
 			request := ectx.Request()
 			logger.Info(context.WithoutCancel(request.Context()), "request completed",
 				"method", request.Method, "uri", request.RequestURI, "path", request.URL.Path, "route", ectx.Path(),
-				"status", ectx.Response().Status, "duration_ms", time.Since(startedAt).Milliseconds())
+				"status", responseStatus(ectx), "duration_ms", time.Since(startedAt).Milliseconds())
 			return nil
 		}
 	}
+}
+
+func responseStatus(ectx *echo.Context) int {
+	response, err := echo.UnwrapResponse(ectx.Response())
+	if err != nil {
+		return 0
+	}
+	return response.Status
 }

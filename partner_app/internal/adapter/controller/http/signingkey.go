@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/adapter/presenter"
 	"github.com/nasrulfuad/auto-key-rotation-strategy/partner_app/internal/usecase/signingkey"
@@ -44,7 +44,7 @@ func NewSigningKeyController(
 // @Success      200  {object}  apidoc.JSONWebKeySet
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /.well-known/jwks.json [get]
-func (c *SigningKeyController) ListPublishedSigningKeys(ectx echo.Context) error {
+func (c *SigningKeyController) ListPublishedSigningKeys(ectx *echo.Context) error {
 	keys, err := c.listPublishedSigningKeys.Execute(ectx.Request().Context())
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (c *SigningKeyController) ListPublishedSigningKeys(ectx echo.Context) error
 // @Success      200  {object}  apidoc.SigningKeyList
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /signing-keys [get]
-func (c *SigningKeyController) ListSigningKeys(ectx echo.Context) error {
+func (c *SigningKeyController) ListSigningKeys(ectx *echo.Context) error {
 	out, err := c.listSigningKeys.Execute(ectx.Request().Context())
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (c *SigningKeyController) ListSigningKeys(ectx echo.Context) error {
 // @Failure      503  {object}  apidoc.ErrorEnvelope  "SIGNING_KEY_NOT_FOUND"
 // @Failure      500  {object}  apidoc.ErrorEnvelope
 // @Router       /signing-keys/rotate [post]
-func (c *SigningKeyController) RotateSigningKey(ectx echo.Context) error {
+func (c *SigningKeyController) RotateSigningKey(ectx *echo.Context) error {
 	out, err := c.rotateSigningKey.Execute(ectx.Request().Context())
 	if err != nil {
 		return err

@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -103,11 +104,11 @@ type Config struct {
 	ActivationNotificationInterval time.Duration
 
 	// ActivationNotificationMaximumAttempts is the number of delivery attempts before a notification is marked failed.
-	// ACTIVATION_NOTIFICATION_MAX_ATTEMPTS, default 5.
+	// ACTIVATION_NOTIFICATION_MAX_ATTEMPTS, default 5; it must be between 1 and math.MaxInt32.
 	ActivationNotificationMaximumAttempts int
 
 	// ActivationNotificationBatchSize is the maximum number of notifications delivered per run.
-	// ACTIVATION_NOTIFICATION_BATCH_SIZE, default 20.
+	// ACTIVATION_NOTIFICATION_BATCH_SIZE, default 20; it must be between 1 and math.MaxInt32.
 	ActivationNotificationBatchSize int
 
 	// Warnings lists configuration that is valid but risky; main logs each one at startup.
@@ -192,8 +193,9 @@ func (c *Config) validate() error {
 	if c.TokenLeeway < 0 {
 		errs = append(errs, fmt.Errorf("TOKEN_LEEWAY must not be negative, got %s", c.TokenLeeway))
 	}
-	if c.ActivationNotificationMaximumAttempts < 1 || c.ActivationNotificationBatchSize < 1 {
-		errs = append(errs, errors.New("ACTIVATION_NOTIFICATION_MAX_ATTEMPTS and ACTIVATION_NOTIFICATION_BATCH_SIZE must be at least 1"))
+	if c.ActivationNotificationMaximumAttempts < 1 || c.ActivationNotificationMaximumAttempts > math.MaxInt32 ||
+		c.ActivationNotificationBatchSize < 1 || c.ActivationNotificationBatchSize > math.MaxInt32 {
+		errs = append(errs, errors.New("ACTIVATION_NOTIFICATION_MAX_ATTEMPTS and ACTIVATION_NOTIFICATION_BATCH_SIZE must be between 1 and 2147483647"))
 	}
 	if c.ActivationNotificationInterval <= 0 {
 		errs = append(errs, fmt.Errorf("ACTIVATION_NOTIFICATION_INTERVAL must be positive, got %s", c.ActivationNotificationInterval))
