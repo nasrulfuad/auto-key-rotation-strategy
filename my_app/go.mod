@@ -5,10 +5,10 @@ go 1.27.4
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.12.0
+	github.com/jackc/pgx/v5 v5.13.0
 	github.com/joho/godotenv v1.5.1
-	github.com/labstack/echo/v5 v5.4.4
-	github.com/pressly/goose/v3 v3.30.0
+	github.com/labstack/echo/v5 v5.4.6
+	github.com/pressly/goose/v3 v3.30.1
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/sync v0.25.0
 )
@@ -43,7 +43,7 @@ require (
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
-	github.com/mfridman/interpolate v0.0.2 // indirect
+	github.com/mfridman/interpolate v0.2.0 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
